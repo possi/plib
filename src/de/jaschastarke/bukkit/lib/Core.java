@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.jaschastarke.bukkit.lib.locale.PluginLang;
 import de.jaschastarke.minecraft.lib.PluginCore;
 
 public class Core extends JavaPlugin implements PluginCore {
@@ -12,4 +13,10 @@ public class Core extends JavaPlugin implements PluginCore {
         return logger;
     }
     
+    private PluginLang lang = null;
+    public PluginLang getTranslation() {
+        if (lang == null)
+            lang = new PluginLang(this);
+        return lang;
+    }
 }
