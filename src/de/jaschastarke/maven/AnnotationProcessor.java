@@ -1,8 +1,8 @@
-package de.jaschastarke.bukkit.maven;
+package de.jaschastarke.maven;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -12,20 +12,16 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import de.jaschastarke.minecraft.lib.annotations.PermissionDescripted;
-import de.jaschastarke.minecraft.lib.annotations.PermissionDescripted.Type;
+import de.jaschastarke.utils.ClassDescriptorStorage;
+import de.jaschastarke.utils.ClassDescriptorStorage.ClassDescription;
 
-@SupportedAnnotationTypes("de.jaschastarke.minecraft.lib.annotations.PermissionDescripted")
+@SupportedAnnotationTypes("de.jaschastarke.maven.ArchiveDocComments")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class AnnotationProcessor extends AbstractProcessor {
     /**
@@ -34,13 +30,13 @@ public class AnnotationProcessor extends AbstractProcessor {
     private static boolean already_run = false;
     
     private Elements elementUtils;
-    private Types typeUtils;
+    //private Types typeUtils;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         elementUtils = processingEnv.getElementUtils();
-        typeUtils = processingEnv.getTypeUtils();
+        //typeUtils = processingEnv.getTypeUtils();
     }
 
     @Override
@@ -49,41 +45,38 @@ public class AnnotationProcessor extends AbstractProcessor {
             return false;
         already_run = true;
         
-        Properties descriptions = new Properties();
+        ClassDescriptorStorage cds = ClassDescriptorStorage.getInstance();
         
-        for (Element elem: roundEnv.getElementsAnnotatedWith(PermissionDescripted.class)) {
-            PermissionDescripted annot = elem.getAnnotation(PermissionDescripted.class);
+        for (Element elem: roundEnv.getElementsAnnotatedWith(ArchiveDocComments.class)) {
+            //ArchiveDocComments annot = elem.getAnnotation(ArchiveDocComments.class);
             
             TypeElement telem = (TypeElement) elem; // Because the Annotation is targeted to Types only
             Name name = elementUtils.getBinaryName(telem);
+            System.out.println(name.toString());
             
-            TypeMirror IPermType = elementUtils.getTypeElement("de.jaschastarke.minecraft.lib.permissions.IPermission").asType();
+            ClassDescription cd = cds.getClassFor(name.toString());
             
-            if (annot.value() == Type.STATIC_ATTRIBUTES) {
-                List<? extends Element> members = elementUtils.getAllMembers(telem);
-                for (Element symbol : members) {
-                    if (symbol.getKind() == ElementKind.ENUM_CONSTANT ||
-                            (symbol.getKind() == ElementKind.FIELD && symbol.getModifiers().contains(Modifier.STATIC))) {
-                        
-                        TypeMirror type = symbol.asType();
-                        
-                        if (typeUtils.isSubtype(type, IPermType)) {
-                            String descr = elementUtils.getDocComment(symbol);
-                            if (descr != null) {
-                                descriptions.setProperty(name.toString()+"#"+symbol.getSimpleName(), descr.trim());
-                            }
-                        }
-                    }
-                }
-            } else {
-                String descr = elementUtils.getDocComment(elem);
-                if (descr != null) {
-                    descriptions.setProperty(name.toString(), descr);
-                }
+            List<? extends Element> members = elementUtils.getAllMembers(telem);
+            for (Element symbol : members) {
+                String descr = elementUtils.getDocComment(symbol);
+                if (descr != null)
+                    cd.setElDocComment(symbol.getSimpleName().toString(), descr.trim());
             }
+            
+            String descr = elementUtils.getDocComment(elem);
+            if (descr != null)
+                cd.setDocComment(descr.trim());
+        }
+
+        try {
+            FileObject resource = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "", "META-INF/descriptions.jos");
+            cds.store(new File(resource.getName()));
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         
-        try {
+        /*try {
             FileObject resource = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "", "META-INF/descriptions.xml");
             descriptions.storeToXML(resource.openOutputStream(), null, "UTF-8");
             /*PrintWriter writer = new PrintWriter(resource.openWriter());
@@ -93,11 +86,11 @@ public class AnnotationProcessor extends AbstractProcessor {
                 writer.print(": ");
                 writer.println(descr.getValue());
             }
-            writer.flush();*/
+            writer.flush();* /
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
+        }*/
         
         return false;
     }
