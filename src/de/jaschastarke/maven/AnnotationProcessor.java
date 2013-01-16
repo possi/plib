@@ -1,6 +1,7 @@
 package de.jaschastarke.maven;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -52,7 +53,6 @@ public class AnnotationProcessor extends AbstractProcessor {
             
             TypeElement telem = (TypeElement) elem; // Because the Annotation is targeted to Types only
             Name name = elementUtils.getBinaryName(telem);
-            System.out.println(name.toString());
             
             ClassDescription cd = cds.getClassFor(name.toString());
             
@@ -71,6 +71,11 @@ public class AnnotationProcessor extends AbstractProcessor {
         try {
             FileObject resource = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "", "META-INF/descriptions.jos");
             cds.store(new File(resource.getName()));
+
+            FileObject txtresource = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "", "META-INF/descriptions.txt");
+            FileWriter txtfile = new FileWriter(txtresource.getName());
+            txtfile.write(cds.toString());
+            txtfile.close();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

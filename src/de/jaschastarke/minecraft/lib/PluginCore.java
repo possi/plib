@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.logging.Logger;
 
 public interface PluginCore {
-    public Logger getLog();
+    public Logger getLogger();
     public String getName();
     
     public File getDataFolder();

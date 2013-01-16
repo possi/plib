@@ -1,18 +1,22 @@
 package de.jaschastarke.utils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+
+import de.jaschastarke.Singleton;
 
 public class ClassHelper {
     
     public static Object getInstance(String classIdentifier)
             throws SecurityException, NoSuchFieldException, ClassNotFoundException, InstantiationException,
-                    IllegalAccessException {
+                    IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         return getInstance(classIdentifier, null);
     }
     public static Object getInstance(String classIdentifier, ClassLoader loader)
             throws SecurityException, NoSuchFieldException, ClassNotFoundException, InstantiationException,
-                    IllegalAccessException {
+                    IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         String[] parts = classIdentifier.split(":");
         Class<?> cls = loader == null ? forName(parts[0]) : forName(parts[0], loader);
         if (parts.length > 1) {
@@ -25,6 +29,13 @@ public class ClassHelper {
                 ret = field.get(ret);
             }
             return ret;
+        } else if (cls.isAssignableFrom(Singleton.class)) {
+            try {
+                Method method = cls.getMethod("getInstance");
+                return method.invoke(null);
+            } catch (NoSuchMethodException e) {
+                return cls.newInstance();
+            }
         } else {
             return cls.newInstance();
         }

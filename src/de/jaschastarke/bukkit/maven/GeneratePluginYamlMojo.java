@@ -8,6 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -28,10 +30,55 @@ import de.jaschastarke.minecraft.lib.permissions.IPermission;
 import de.jaschastarke.minecraft.lib.permissions.IPermissionContainer;
 import de.jaschastarke.utils.ClassDescriptorStorage;
 import de.jaschastarke.utils.ClassDescriptorStorage.ClassDescription;
-import de.jaschastarke.utils.ClassDescriptorStorage.DocComment;
+import de.jaschastarke.utils.DocComment;
 import de.jaschastarke.utils.ClassHelper;
 
 /**
+ * 
+ * Example Usage:
+ * <pre>{@code
+ *    <plugin>
+ *        <groupId>org.apache.maven.plugins</groupId>
+ *        <artifactId>maven-compiler-plugin</artifactId>
+ *        <version>2.3.2</version>
+ *        <configuration>
+ *            <source>1.6</source>
+ *            <target>1.6</target>
+ *            <annotationProcessors>
+ *              <!-- Needed to fetch DocComments from Source -->
+ *              <annotationProcessor>de.jaschastarke.maven.AnnotationProcessor</annotationProcessor>
+ *            </annotationProcessors>
+ *        </configuration>
+ *    </plugin>
+ *    <plugin>
+ *      <groupId>de.jaschastarke</groupId>
+ *      <artifactId>plib</artifactId>
+ *      <version>0.1-SNAPSHOT</version>
+ *      <executions>
+ *        <execution>
+ *          <phase>compile</phase>
+ *          <goals>
+ *            <goal>pluginyaml</goal>
+ *          </goals>
+ *          <configuration>
+ *            <!-- plugin.yml -->
+ *            <mainClass>de.jaschastarke.minecraft.limitedcreative.LimitedCreative</mainClass>
+ *            <softdepend>
+ *              <param>WorldGuard</param>
+ *              <param>WorldEdit</param>
+ *              <param>MultiInv</param>
+ *            </softdepend>
+ *            <custom>
+ *              <dev-url>http://dev.bukkit.org/server-mods/limited-creative/</dev-url>
+ *            </custom>
+ *            <registeredPermissions>
+ *              <param>de.jaschastarke.minecraft.limitedcreative.Perms:Root</param>
+ *            </registeredPermissions>
+ *          </configuration>
+ *        </execution>
+ *      </executions>
+ *    </plugin>
+ * }</pre>
  * @author Jascha
  * @goal pluginyaml
  * @requiresDependencyResolution compile
@@ -47,6 +94,11 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
      * @parameter default-value="${project.name}"
      */
     private String name;
+    
+    /**
+     * @parameter
+     */
+    private String mainClass;
     
     /**
      * @parameter
@@ -106,6 +158,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         }*/
         
         Map<String, Object> data = new HashMap<String, Object>();
+        data.put("main", this.mainClass);
         data.put("name", this.name);
         data.put("version", this.version);
         if (this.dependencies != null)
@@ -153,9 +206,14 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();
                     throw new MojoFailureException("registeredPermission class not found: " + cls);
+                } catch (IllegalArgumentException e) {
+                    throw new MojoFailureException("registeredPermission class could not be instanciated: " + cls);
+                } catch (InvocationTargetException e) {
+                    throw new MojoFailureException("registeredPermission class could not be instanciated: " + cls);
                 }
                 //Class<?> pclass = pobj.getClass();
                 //Class<?> pclass = ClassHelper.forName(cls, loader);
+
 
                 //if (IPermissionContainer.class.isAssignableFrom(pclass)) {
                 
@@ -190,20 +248,45 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
     }
     private void addPermissionsToList(Map<String, Object> list, IPermissionContainer perms) {
         for (IPermission perm : perms.getPermissions()) {
-            addPermissionToList(list, perm);
+            DocComment dc = getContainerPropertyDoc(perms, perm);
+            if (dc != null) {
+                addPermissionToList(list, perm, dc.getDescription());
+            } else {
+                addPermissionToList(list, perm);
+            }
         }
     }
     private void addPermissionToList(Map<String, Object> list, IPermission perm) {
         if (perm instanceof Enum) {
             DocComment dc = getEnumPropertyDoc((Enum<?>) perm);
             if (dc != null) {
-                addPermissionToList(list, perm, dc.toString());
+                addPermissionToList(list, perm, dc.getDescription());
             } else {
                 addPermissionToList(list, perm, null);
             }
         } else {
             addPermissionToList(list, perm, null);
         }
+    }
+    private DocComment getContainerPropertyDoc(IPermissionContainer set, IPermission perm) {
+        ClassDescription cd = cds.getClassFor(set);
+        Class<?> cls = set.getClass();
+        for (Field field : cls.getFields()) {
+            try {
+                if (Modifier.isPublic(field.getModifiers())) {
+                    if (Modifier.isStatic(field.getModifiers()) && field.get(null) == perm) {
+                        return cd.getElDocComment(field.getName());
+                    } else if (field.get(set) == perm) {
+                        return cd.getElDocComment(field.getName());
+                    }
+                }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
     private DocComment getEnumPropertyDoc(Enum<?> set) {
         ClassDescription cd = cds.getClassFor(set);

@@ -93,21 +93,6 @@ public class ClassDescriptorStorage implements Serializable {
         }
         return str.trim();
     }
-
-
-
-    public class DocComment implements Serializable {
-        private static final long serialVersionUID = -6500262229790513118L;
-        
-        protected String doc;
-        public DocComment(String comment) {
-            doc = comment;
-        }
-        @Override
-        public String toString() {
-            return doc;
-        }
-    }
     
     public class ClassDescription implements Serializable {
         private static final long serialVersionUID = -4605521733206873274L;
