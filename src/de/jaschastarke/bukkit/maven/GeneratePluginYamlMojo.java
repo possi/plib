@@ -22,6 +22,7 @@ import java.util.Properties;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.bukkit.permissions.PermissionDefault;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import de.jaschastarke.maven.AbstractExecMojo;
@@ -121,7 +122,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
     private List<String> registeredPermissions;
     
     /**
-     * @parameter default-value="${project.build.directory}/generated-sources/annotations/META-INF"
+     * @parameter default-value="${project.build.outputDirectory}/META-INF"
      * @required 
      */
     private String meta_directory;
@@ -141,7 +142,11 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        cds = ClassDescriptorStorage.load(new File(this.meta_directory + "/descriptions.jos"));
+        try {
+            cds = ClassDescriptorStorage.load(new File(this.meta_directory + "/descriptions.jos"));
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to load class doccomments", e);
+        }
 
         List<URL> classpathURLs = new ArrayList<URL>();
         //this.addRelevantPluginDependenciesToClasspath(classpathURLs);
@@ -176,7 +181,11 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
             data.put("permissions", this.getPermissions());
         }
         
-        Yaml yaml = new Yaml();
+        DumperOptions options = new DumperOptions();
+        options.setWidth(80);
+        options.setIndent(4);
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        Yaml yaml = new Yaml(options);
         StringWriter writer = new StringWriter();
         yaml.dump(data, writer);
         

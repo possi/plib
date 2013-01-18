@@ -19,16 +19,19 @@ public class DocComment implements Serializable {
     public String getDescription() {
         String comment = "";
         String[] lines = doc.split("\r?\n");
+        boolean newline = true;
         for (int i = 0; i < lines.length; i++) {
-            if (lines[i].trim().length() == 0) {
-                comment += "\n\n";
+            if (lines[i].trim().isEmpty()) {
+                comment += newline ? "\n" : "\n\n";
+                newline = true;
             } else {
                 if (ANNOT_REGEX.matcher(lines[i]).matches()) {
                     break;
                 } else {
-                    if (i > 0)
+                    if (!newline)
                         comment += " ";
                     comment += lines[i].trim();
+                    newline = false;
                 }
             }
         }
@@ -38,7 +41,7 @@ public class DocComment implements Serializable {
         String comment = "";
         String[] lines = doc.split("\r?\n");
         for (int i = 0; i < lines.length; i++) {
-            if (lines[i].trim().length() == 0 || ANNOT_REGEX.matcher(lines[i]).matches()) {
+            if (lines[i].trim().isEmpty() || ANNOT_REGEX.matcher(lines[i]).matches()) {
                 break;
             } else {
                 if (i > 0)
@@ -52,19 +55,22 @@ public class DocComment implements Serializable {
         boolean longDescStarted = false;
         String comment = "";
         String[] lines = doc.split("\r?\n");
+        boolean newline = true;
         for (int i = 0; i < lines.length; i++) {
             if (lines[i].trim().length() == 0) {
                 if (!longDescStarted)
                     longDescStarted = true;
                 else
                     comment += "\n\n";
+                newline = true;
             } else {
                 if (ANNOT_REGEX.matcher(lines[i]).matches()) {
                     break;
                 } else {
-                    if (i > 0)
+                    if (!newline)
                         comment += " ";
                     comment += lines[i].trim();
+                    newline = false;
                 }
             }
         }

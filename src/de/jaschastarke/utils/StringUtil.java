@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.lang.WordUtils;
+
 
 final public class StringUtil {
     public static int versionCompare(String vers1, String vers2) {
@@ -69,5 +71,17 @@ final public class StringUtil {
     }
     public static String join(String[] list, String sep) {
         return join(list, sep, 0, list.length);
+    }
+    
+    /*public static String uncapitalize(String string) {
+        return Character.toLowerCase(string.charAt(0)) + (string.length() > 1 ? string.substring(1) : "");
+    }*/
+    
+    public static String wrapLines(String multilineText, int wrapSize) {
+        String[] lines = multilineText.split("\r?\n");
+        for (int i = 0; i < lines.length; i++) {
+            lines[i] = WordUtils.wrap(lines[i], wrapSize);
+        }
+        return join(lines, "\n");
     }
 }

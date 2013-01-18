@@ -11,7 +11,7 @@ import de.jaschastarke.modularize.ModuleManager;
 public class Core extends JavaPlugin implements PluginCore, IHasModules {
     public boolean debug = false;
     protected boolean initialized = false;
-    protected EventHandlerList listeners;
+    protected EventHandlerList listeners = new EventHandlerList(this);
     private PluginLogger log;
     
     public boolean isDebug() {
@@ -30,10 +30,12 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
         }
         
         modules.activateAll();
+        listeners.registerAllEvents();
     }
     @Override
     public void onDisable() {
         modules.disableAll();
+        listeners.unregisterAllEvents();
     }
     
     public PluginLogger getLog() {

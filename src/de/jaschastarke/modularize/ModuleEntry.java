@@ -67,8 +67,6 @@ public class ModuleEntry <T extends IModule> {
             module.OnDisable();
             this.state = ModuleState.DISABLED;
             return true;
-        } else if (state == ModuleState.NOT_INITIALIZED) {
-            throw new InvalidStateException("Module "+module.getClass().getName()+" not yet initialized.");
         }
         return false;
     }

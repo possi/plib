@@ -20,6 +20,7 @@ public class ModuleManager {
     }
     public <T extends IModule> ModuleEntry<T> addModule(T module) {
         ModuleEntry<T> entry = new ModuleEntry<T>(module, this);
+        entry.initialize();
         return addModule(entry);
     }
     @SuppressWarnings("unchecked")

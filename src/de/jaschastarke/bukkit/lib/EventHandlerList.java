@@ -15,9 +15,12 @@ public class EventHandlerList {
         this.plugin = plugin; 
     }
     public void registerEvents(Listener eventListener) {
+        addListener(eventListener);
+        listenTo(eventListener);
+    }
+    public void addListener(Listener eventListener) {
         if (!listeners.contains(eventListener))
             listeners.add(eventListener);
-        listenTo(eventListener);
     }
     protected void removeEvents(Listener eventListener) {
         HandlerList.unregisterAll(eventListener);

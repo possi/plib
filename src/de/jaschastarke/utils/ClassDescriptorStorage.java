@@ -62,22 +62,25 @@ public class ClassDescriptorStorage implements Serializable {
             }
         }
     }
-    public static ClassDescriptorStorage load(File file) {
+    public static ClassDescriptorStorage load(File file) throws IOException {
         InputStream fis = null;
+        fis = new FileInputStream(file);
+        load(fis);
+        fis.close();
+        return instance;
+    }
+
+    public static ClassDescriptorStorage load(InputStream resource) throws IOException {
         ObjectInputStream o = null;
 
-        try {
-          fis = new FileInputStream(file);
-          o = new ObjectInputStream(fis);
+        try {;
+          o = new ObjectInputStream(resource);
           instance = (ClassDescriptorStorage) o.readObject();
-        } catch (IOException e) {
-            System.err.println(e);
         } catch (ClassNotFoundException e) {
             System.err.println(e);
         } finally {
             try {
                 o.close();
-                fis.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }

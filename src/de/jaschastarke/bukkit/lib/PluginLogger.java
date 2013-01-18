@@ -3,7 +3,9 @@ package de.jaschastarke.bukkit.lib;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class PluginLogger {
+import de.jaschastarke.utils.ISimpleLogger;
+
+public class PluginLogger implements ISimpleLogger {
     protected Logger log;
     protected Core plugin;
     
@@ -22,6 +24,9 @@ public class PluginLogger {
         if (plugin.isDebug()) {
             log.log(Level.FINEST, "[DEBUG] " + extendMessage(msg));
         }
+    }
+    public void severe(String msg) {
+        log.log(Level.SEVERE, "[SEVERE] " + extendMessage(msg));
     }
     public void warn(String msg) {
         log.log(Level.WARNING, "[WARNING] " + extendMessage(msg));

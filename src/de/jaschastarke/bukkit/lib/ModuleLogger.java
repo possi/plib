@@ -1,15 +1,15 @@
 package de.jaschastarke.bukkit.lib;
 
 public class ModuleLogger extends PluginLogger {
-    protected CoreModule mod;
+    protected SimpleModule<?> mod;
     
-    public ModuleLogger(Core plugin, CoreModule mod) {
+    public ModuleLogger(Core plugin, SimpleModule<?> simpleModule) {
         super(plugin);
-        this.mod = mod;
+        this.mod = simpleModule;
     }
     
     @Override
     protected String extendMessage(String msg) {
-        return "<"+this.mod.getName()+"> "+msg;
+        return "<"+mod.getName()+"> "+msg;
     }
 }
