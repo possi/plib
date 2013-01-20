@@ -1,17 +1,19 @@
 package de.jaschastarke.hooking;
 
-public class GenericHooker<T> extends AbstractHooker<GenericHooker.Check<T>> {
+public class GetHooker<T> extends AbstractHooker<GetHooker.Check<T>> {
     public static interface Check<E> {
-        E test(Object... objects);
+        E test();
     }
     
-    protected T def;
-    public GenericHooker(T defaultValue) {
+    protected T def = null;
+    public GetHooker() {
+    }
+    public GetHooker(T defaultValue) {
         def = defaultValue;
     }
-    public T test(Object... objects) {
+    public T test() {
         for (Check<T> c : hooks) {
-            T val = c.test(objects);
+            T val = c.test();
             if (val != null)
                 return val;
         }

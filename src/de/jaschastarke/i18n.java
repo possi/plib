@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.IncompleteArgumentException;
 
 public class i18n {
-    private static final String DEFAULT_BUNDLE_NAME = "messages";
     protected ResourceBundle bundle;
     public i18n(String bundleName, Locale locale) {
         useBundle(bundleName, locale);
@@ -23,13 +22,16 @@ public class i18n {
     public i18n() {
         useBundle(null, null);
     }
+    protected i18n(boolean do_init) {
+        if (do_init)
+            useBundle(null, null);
+    }
+    
     private void useBundle(String bundleName, Locale locale) {
-        if (bundleName == null)
-            bundleName = DEFAULT_BUNDLE_NAME;
-        if (locale != null)
-            bundle = ResourceBundle.getBundle(bundleName, locale);
-        else
+        if (locale == null)
             bundle = ResourceBundle.getBundle(bundleName);
+        else
+            bundle = ResourceBundle.getBundle(bundleName, locale);
     }
     
     public ResourceBundle getResourceBundle() {

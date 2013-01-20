@@ -15,9 +15,10 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
-import de.jaschastarke.configuration.ConfigurationNode;
-import de.jaschastarke.configuration.annotations.IConfigurationGroup;
-import de.jaschastarke.configuration.annotations.IConfigurationSubGroup;
+import de.jaschastarke.configuration.ElementConfigurationNode;
+import de.jaschastarke.configuration.IConfigurationGroup;
+import de.jaschastarke.configuration.IConfigurationNode;
+import de.jaschastarke.configuration.IConfigurationSubGroup;
 import de.jaschastarke.utils.ClassDescriptorStorage;
 import de.jaschastarke.utils.ClassDescriptorStorage.ClassDescription;
 import de.jaschastarke.utils.DocComment;
@@ -65,50 +66,54 @@ public class ConfigurationDumper {
                 String ccmt = class_comment.getDescription();
                 ccmt = StringUtil.wrapLines(ccmt, WRAP_SIZE - indention - 2);
                 confsect.append(prependLines(ccmt, "# "));
+                confsect.append("\n");
             }
         }
         
-        for (ConfigurationNode node : conf.getConfigNodes()) {
+        for (IConfigurationNode node : conf.getConfigNodes()) {
             if (confsect.length() > 0)
-                confsect.append("\n\n");
-            if (node.getMethod() != null) {
-                DocComment comment = cd.getElDocComment(node.getMethod().getName());
+                confsect.append("\n");
+            if (node instanceof ElementConfigurationNode) {
+                // TODO: Abstract getDocComment to be part of the configuration node?
+                ElementConfigurationNode enode = (ElementConfigurationNode) node;
+                if (enode.getMethod() != null) {
+                    DocComment comment = cd.getElDocComment(enode.getMethod().getName());
+                    if (comment != null) {
+                        String cmt = comment.getDescription();
+                        cmt = StringUtil.wrapLines(cmt, WRAP_SIZE - indention - 2);
+                        confsect.append(prependLines(cmt, "# "));
+                        confsect.append("\n");
+                    }
+                }
+                Map<String, Object> tmp = new HashMap<String, Object>();
+                if (enode.getMethod() == null)
+                    tmp.put(node.getName(), config.getValues().get(node.getName()));
+                else {
+                    try {
+                        tmp.put(node.getName(), enode.getMethod().invoke(conf));
+                    } catch (IllegalArgumentException e) {
+                        tmp.put(node.getName(), config.getValues().get(node.getName()));
+                    } catch (IllegalAccessException e) {
+                        tmp.put(node.getName(), config.getValues().get(node.getName()));
+                    } catch (InvocationTargetException e) {
+                        tmp.put(node.getName(), config.getValues().get(node.getName()));
+                    }
+                }
+                confsect.append(yaml.dump(tmp));
+            } else if (node instanceof IConfigurationSubGroup) {
+                ClassDescription scd = cds.getClassFor(node);
+                DocComment comment = scd.getDocComment();
                 if (comment != null) {
                     String cmt = comment.getDescription();
                     cmt = StringUtil.wrapLines(cmt, WRAP_SIZE - indention - 2);
                     confsect.append(prependLines(cmt, "# "));
                     confsect.append("\n");
                 }
+                
+                confsect.append(node.getName());
+                confsect.append(":\n");
+                confsect.append(getConfigurationYamlPart((IConfigurationSubGroup) node, level + 1));
             }
-            Map<String, Object> tmp = new HashMap<String, Object>();
-            if (node.getMethod() != null)
-                tmp.put(node.getName(), config.getConfigurationValues().get(node.getName()));
-            else {
-                try {
-                    tmp.put(node.getName(), node.getMethod().invoke(conf));
-                } catch (IllegalArgumentException e) {
-                    tmp.put(node.getName(), config.getConfigurationValues().get(node.getName()));
-                } catch (IllegalAccessException e) {
-                    tmp.put(node.getName(), config.getConfigurationValues().get(node.getName()));
-                } catch (InvocationTargetException e) {
-                    tmp.put(node.getName(), config.getConfigurationValues().get(node.getName()));
-                }
-            }
-            confsect.append(yaml.dump(tmp));
-        }
-        for (IConfigurationSubGroup group : conf.getSubGroups()) {
-            if (confsect.length() > 0)
-                confsect.append("\n\n");
-            DocComment comment = cds.getClassFor(group).getDocComment();
-            if (comment != null) {
-                String cmt = comment.getDescription();
-                cmt = StringUtil.wrapLines(cmt, WRAP_SIZE - indention - 2);
-                confsect.append(prependLines(cmt, "# "));
-                confsect.append("\n");
-            }
-            confsect.append(group.getNodeName());
-            confsect.append(":\n");
-            confsect.append(getConfigurationYamlPart(group, level + 1));
         }
         if (level > 0)
             return prependLines(confsect.toString(), StringUtils.repeat(" ", INDENT_SIZE));

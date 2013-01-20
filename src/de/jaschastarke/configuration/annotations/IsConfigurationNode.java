@@ -7,6 +7,16 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME) 
 @Target(ElementType.METHOD)
+/**
+ * This Annotation describes that the getter-method it is added tot, is treated as a value-node in the configuration
+ * file.
+ * 
+ * If no nodename is given, the name is derived from the getter-method-name: getEnabled() -> enabled
+ */
 public @interface IsConfigurationNode {
-    String value() default ""; // NodeName
+    /**
+     * If no nodename is given, the name is derived from the getter-method-name: getEnabled() -> enabled
+     */
+    String name() default "";
+    int order() default 0;
 }

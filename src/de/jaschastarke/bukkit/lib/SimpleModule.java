@@ -27,6 +27,9 @@ abstract public class SimpleModule <E extends Core> extends AbstractModule imple
         if (this instanceof Listener)
             listeners.addListener((Listener) this);
     }
+    public E getPlugin() {
+        return plugin;
+    }
     public boolean isDebug() {
         return debug || plugin.isDebug();
     }
@@ -49,7 +52,7 @@ abstract public class SimpleModule <E extends Core> extends AbstractModule imple
         listeners.unregisterAllEvents();
     }
     public String getName() {
-        return this.getClass().getName();
+        return this.getClass().getSimpleName();
     }
 
     /* IHasModules */

@@ -20,6 +20,7 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
     
     public void OnInitialize() {
         log = new PluginLogger(this);
+        initialized = true;
     }
     
     @Override
@@ -27,6 +28,7 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
         super.onEnable();
         if (!initialized) {
             this.OnInitialize();
+            initialized = true;
         }
         
         modules.activateAll();
