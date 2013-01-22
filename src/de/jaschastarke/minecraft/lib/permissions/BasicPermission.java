@@ -1,11 +1,15 @@
 package de.jaschastarke.minecraft.lib.permissions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.permissions.PermissionDefault;
 
-public class BasicPermission implements IPermission {
+public class BasicPermission implements IPermission, IPermissionChild {
     private PermissionDefault def = PermissionDefault.FALSE;
     private IAbstractPermission parent;
     private String name;
+    private List<IPermission> parents = new ArrayList<IPermission>();
     
     public BasicPermission(IAbstractPermission parent, String name) {
         this.parent = parent;
@@ -31,4 +35,16 @@ public class BasicPermission implements IPermission {
         return def;
     }
 
+    public String toString() {
+        return name;
+    }
+    
+    @Override
+    public void addParentPermission(IPermission parent) {
+        parents.add(parent);
+    }
+    
+    public IPermission[] getParentPermissions() {
+        return parents.toArray(new IPermission[parents.size()]);
+    }
 }

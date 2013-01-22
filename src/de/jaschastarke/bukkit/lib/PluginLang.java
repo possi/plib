@@ -4,19 +4,21 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
+import de.jaschastarke.MultipleResourceBundle;
 import de.jaschastarke.i18n;
 
 public class PluginLang extends i18n {
-    private Core plugin;
+    private Core plugin = null;
     public PluginLang(String bundle, Core plugin) {
-        super(false);
+        super(bundle);
         this.plugin = plugin;
-        useBundle(bundle, null); // replace bundle set by parent
+        useBundle(bundle, null);
     }
     
-    private void useBundle(String bundleName, Locale locale) {
+    protected void useBundle(String bundleName, Locale locale) {
+        if (plugin == null)
+            return;
         URLClassLoader loader = null;
         try {
             URL datadir = plugin.getDataFolder().toURI().toURL();
@@ -24,11 +26,7 @@ public class PluginLang extends i18n {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        plugin.getLog().debug("Using own classloader for resourcebundle!");
-        
-        if (locale == null)
-            bundle = ResourceBundle.getBundle(bundleName, Locale.getDefault(), loader);
-        else
-            bundle = ResourceBundle.getBundle(bundleName, locale, loader);
+
+        bundle = new MultipleResourceBundle(locale, new String[]{"de.jaschastarke.bukkit.messages", bundleName}, loader);
     }
 }

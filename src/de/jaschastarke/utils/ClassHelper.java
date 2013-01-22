@@ -2,10 +2,7 @@ package de.jaschastarke.utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
-import de.jaschastarke.Singleton;
 
 public class ClassHelper {
     
@@ -29,14 +26,14 @@ public class ClassHelper {
                 ret = field.get(ret);
             }
             return ret;
-        } else if (cls.isAssignableFrom(Singleton.class)) {
+        } /*else if (cls.isAssignableFrom(Singleton.class)) {
             try {
                 Method method = cls.getMethod("getInstance");
                 return method.invoke(null);
             } catch (NoSuchMethodException e) {
                 return cls.newInstance();
             }
-        } else {
+        }*/ else {
             return cls.newInstance();
         }
     }
@@ -66,17 +63,11 @@ public class ClassHelper {
                 } catch (ClassNotFoundException e1) {
                     System.out.println("Not a class: " + clsname);;
                 } catch (SecurityException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    throw new IllegalArgumentException(e1);
                 } catch (NoSuchFieldException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                } catch (IllegalArgumentException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    throw new IllegalArgumentException(e1);
                 } catch (IllegalAccessException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    throw new IllegalArgumentException(e1);
                 }
             }
             throw e;
@@ -94,32 +85,26 @@ public class ClassHelper {
                 String clsname = StringUtil.join(cls, ".", 0, i);
                 try {
                     Class<?> theclass = loader.loadClass(clsname);
-                    System.out.println("Is a class: " + clsname);
+                    //System.out.println("Is a class: " + clsname);
                     
                     for (int j = i; j < cls.length; j++) {
-                        System.out.println("looking for field: " + cls[j]);
+                        //System.out.println("looking for field: " + cls[j]);
                         Field field = theclass.getField(cls[j]);
                         if (field == null || !Modifier.isStatic(field.getModifiers()))
                             throw e;
-                        System.out.println("...found");
+                        //System.out.println("...found");
                         theclass = field.get(null).getClass();
                     }
                     
                     return theclass;
                 } catch (ClassNotFoundException e1) {
-                    System.out.println("Not a class: " + clsname);;
+                    System.err.println("Not a class: " + clsname);;
                 } catch (SecurityException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    throw new IllegalArgumentException(e1);
                 } catch (NoSuchFieldException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                } catch (IllegalArgumentException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    throw new IllegalArgumentException(e1);
                 } catch (IllegalAccessException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    throw new IllegalArgumentException(e1);
                 }
             }
             throw e;

@@ -5,19 +5,19 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimplePermissionContainer implements IPermissionContainer {
+public class SimplePermissionContainer implements IContainer {
     private IPermission[] permarray = null;
     
     public IPermission[] getPermissions() {
         if (permarray == null) {
             List<IPermission> perms = new ArrayList<IPermission>();
-            for (Field field : this.getClass().getDeclaredFields()) {
+            for (Field field : this.getClass().getFields()) {
                 try {
-                    if (field.getType().isAssignableFrom(IPermission.class)) {
+                    if (IPermission.class.isAssignableFrom(field.getType())) {
                         if (Modifier.isStatic(field.getModifiers())) {
                             perms.add((IPermission) field.get(null));
                         } else {
-                                perms.add((IPermission) field.get(this));
+                            perms.add((IPermission) field.get(this));
                         }
                     }
                 } catch (IllegalArgumentException e) {
@@ -28,10 +28,21 @@ public class SimplePermissionContainer implements IPermissionContainer {
         }
         return permarray;
     }
-    public String getFullString() {
-        return null;
-    }
-    public IAbstractPermission getParent() {
+    public IPermission getPermission(String name) {
+        /*List<String> parts = Arrays.asList(name.split(Pattern.quote(SEP)));
+        String rest = null;
+        if (parts.size() > 1) {
+            name = parts.remove(0);
+            rest = StringUtil.join(parts.toArray(new String[parts.size()]), SEP);
+        }*/
+        for (IPermission perm : getPermissions()) {
+            if (perm.toString().equals(name)) {
+                /*if (rest != null && ..) {
+                    return perm.getPermission(rest);
+                }*/
+                return perm;
+            }
+        }
         return null;
     }
 }

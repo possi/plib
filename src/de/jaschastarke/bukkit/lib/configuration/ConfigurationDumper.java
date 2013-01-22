@@ -31,7 +31,6 @@ public class ConfigurationDumper {
     protected Yaml yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions);
     protected Configuration config;
     private final static Pattern LINE_START = Pattern.compile("^", Pattern.MULTILINE);
-    private final static int INDENT_SIZE = 4;
     private final static int WRAP_SIZE = 80;
     
     public ConfigurationDumper(Configuration conf) {
@@ -55,7 +54,7 @@ public class ConfigurationDumper {
      * @TODO: do better by extending snakeYaml
      */
     private String getConfigurationYamlPart(IConfigurationGroup conf, int level) {
-        int indention = INDENT_SIZE * level;
+        int indention = yamlOptions.getIndent() * level;
         ClassDescription cd = cds.getClassFor(conf);
         yamlOptions.setWidth(WRAP_SIZE - indention);
         
@@ -116,7 +115,7 @@ public class ConfigurationDumper {
             }
         }
         if (level > 0)
-            return prependLines(confsect.toString(), StringUtils.repeat(" ", INDENT_SIZE));
+            return prependLines(confsect.toString(), StringUtils.repeat(" ", yamlOptions.getIndent()));
         else
             return confsect.toString();
     }

@@ -1,6 +1,7 @@
 package de.jaschastarke.utils;
 
 import java.io.Serializable;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DocComment implements Serializable {
@@ -71,6 +72,23 @@ public class DocComment implements Serializable {
                         comment += " ";
                     comment += lines[i].trim();
                     newline = false;
+                }
+            }
+        }
+        return comment;
+    }
+    public String getAnnotationValue(String string) {
+        String comment = null;
+        String[] lines = doc.split("\r?\n");
+        for (int i = 0; i < lines.length; i++) {
+            Matcher line = ANNOT_REGEX.matcher(lines[i]);
+            if (comment != null) {
+                if (line.matches() || lines[i].trim().isEmpty())
+                    break;
+                comment += " " + lines[i].trim();
+            } else {
+                if (line.matches() && string.equals(line.group(1))) {
+                    comment = line.group(2).trim();
                 }
             }
         }

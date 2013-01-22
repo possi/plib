@@ -22,13 +22,13 @@ public class PluginLogger implements ISimpleLogger {
     }
     public void debug(String msg) {
         if (plugin.isDebug()) {
-            log.log(Level.FINEST, "[DEBUG] " + extendMessage(msg));
+            log.log(Level.INFO, "[DEBUG] " + extendMessage(msg));
         }
     }
     public void severe(String msg) {
-        log.log(Level.SEVERE, "[SEVERE] " + extendMessage(msg));
+        log.log(Level.SEVERE, extendMessage(msg));
     }
     public void warn(String msg) {
-        log.log(Level.WARNING, "[WARNING] " + extendMessage(msg));
+        log.log(Level.WARNING, extendMessage(msg));
     }
 }

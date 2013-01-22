@@ -80,25 +80,8 @@ public class AnnotationProcessor extends AbstractProcessor {
             txtfile.write(cds.toString());
             txtfile.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException("Annotation processor failed to write output file", e);
         }
-        
-        /*try {
-            FileObject resource = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "", "META-INF/descriptions.xml");
-            descriptions.storeToXML(resource.openOutputStream(), null, "UTF-8");
-            /*PrintWriter writer = new PrintWriter(resource.openWriter());
-            for (Entry<String, String> descr : descriptions.entrySet()) {
-                System.out.println(descr.getKey()+" "+descr.getValue());
-                writer.print(descr.getKey());
-                writer.print(": ");
-                writer.println(descr.getValue());
-            }
-            writer.flush();* /
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }*/
         
         return false;
     }

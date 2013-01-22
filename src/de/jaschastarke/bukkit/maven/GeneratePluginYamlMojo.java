@@ -13,7 +13,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,10 +25,13 @@ import org.bukkit.permissions.PermissionDefault;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import de.jaschastarke.bukkit.lib.commands.ICommand;
 import de.jaschastarke.maven.AbstractExecMojo;
+import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
+import de.jaschastarke.minecraft.lib.permissions.IChildPermissionContainer;
+import de.jaschastarke.minecraft.lib.permissions.IContainer;
 import de.jaschastarke.minecraft.lib.permissions.IHasDescription;
 import de.jaschastarke.minecraft.lib.permissions.IPermission;
-import de.jaschastarke.minecraft.lib.permissions.IPermissionContainer;
 import de.jaschastarke.utils.ClassDescriptorStorage;
 import de.jaschastarke.utils.ClassDescriptorStorage.ClassDescription;
 import de.jaschastarke.utils.DocComment;
@@ -122,6 +125,11 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
     private List<String> registeredPermissions;
     
     /**
+     * @parameter
+     */
+    private List<String> registeredCommands;
+    
+    /**
      * @parameter default-value="${project.build.outputDirectory}/META-INF"
      * @required 
      */
@@ -162,10 +170,10 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
             e.printStackTrace();
         }*/
         
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("main", this.mainClass);
+        Map<String, Object> data = new LinkedHashMap<String, Object>();
         data.put("name", this.name);
         data.put("version", this.version);
+        data.put("main", this.mainClass);
         if (this.dependencies != null)
             data.put("dependencies", this.dependencies);
         if (this.softdepend != null)
@@ -176,14 +184,15 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                 data.put((String) property.getKey(), property.getValue());
             }
         }
-        
+        if (this.registeredCommands != null) {
+            data.put("commands", this.getCommands());
+        }
         if (this.registeredPermissions != null) {
             data.put("permissions", this.getPermissions());
         }
         
         DumperOptions options = new DumperOptions();
         options.setWidth(80);
-        options.setIndent(4);
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(options);
         StringWriter writer = new StringWriter();
@@ -199,10 +208,59 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         }
     }
     
-    private Map<String, Object> getPermissions() throws MojoFailureException {
-        Map<String, Object> list = new HashMap<String, Object>();
+    private Map<String, Object> getCommands() throws MojoFailureException {
+        Map<String, Object> list = new LinkedHashMap<String, Object>();
+
+        for (String cls : this.registeredCommands) {
+            try {
+                Object pobj;
+                try {
+                    pobj = ClassHelper.getInstance(cls, loader);
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                    throw new MojoFailureException("registeredCommand class not found: " + cls);
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                    throw new MojoFailureException("registeredCommand class not found: " + cls);
+                } catch (IllegalArgumentException e) {
+                    throw new MojoFailureException("registeredCommand class could not be instanciated: " + cls);
+                } catch (InvocationTargetException e) {
+                    throw new MojoFailureException("registeredCommand class could not be instanciated: " + cls);
+                }
+                
+                if (pobj instanceof ICommand) {
+                    ClassDescription cd = cds.getClassFor(pobj);
+                    DocComment comment = cd.getDocComment();
+                    Map<String, Object> command = new LinkedHashMap<String, Object>();
+                    String usage = comment.getAnnotationValue("usage");
+                    String permission = comment.getAnnotationValue("permission");
+                    String permissionMessage = comment.getAnnotationValue("permissionMessage");
+                    
+                    command.put("description", comment.getDescription());
+                    if (usage != null)
+                        command.put("usage", usage);
+                    command.put("aliases", ((ICommand) pobj).getAliases());
+                    
+                    if (permission != null)
+                        command.put("permission", permission);
+                    if (permissionMessage != null)
+                        command.put("permission-message", permissionMessage);
+                    list.put(((ICommand) pobj).getName(), command);
+                }
+            } catch (ClassNotFoundException e) {
+                throw new MojoFailureException("registeredCommand class not found: " + cls);
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
         
-        //loader.loadClass(arg0)
+        return list;
+    }
+    
+    private Map<String, Object> getPermissions() throws MojoFailureException {
+        Map<String, Object> list = new LinkedHashMap<String, Object>();
         
         for (String cls : this.registeredPermissions) {
             try {
@@ -220,30 +278,19 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                 } catch (InvocationTargetException e) {
                     throw new MojoFailureException("registeredPermission class could not be instanciated: " + cls);
                 }
-                //Class<?> pclass = pobj.getClass();
-                //Class<?> pclass = ClassHelper.forName(cls, loader);
 
-
-                //if (IPermissionContainer.class.isAssignableFrom(pclass)) {
-                
-                //if (IPermissionContainer.class.isInstance(pobj)) {
-                if (pobj instanceof IPermissionContainer) {
-                    IPermissionContainer container = (IPermissionContainer) pobj;
-                    addPermissionsToList(list, container);
+                if (pobj instanceof IPermission) {
+                    getLog().debug("Registered Permission is IPermission "+((IAbstractPermission) pobj).getFullString()+" <"+pobj.getClass().getName()+">");
+                    DocComment comment = cds.getClassFor(pobj).getDocComment();
+                    if (comment == null)
+                        addPermissionToList(list, (IPermission) pobj);
+                    else
+                        addPermissionToList(list, (IPermission) pobj, comment.getDescription());
                 }
-                
-                /*
-                if (pclass.isInstance(IPermissionContainer.class)) {
-                    addPermissionsToList(list, (IPermissionContainer) pclass.newInstance());
+                if (pobj instanceof IContainer) {
+                    getLog().debug("Registered Permission is IContainer "+pobj.getClass().getName());
+                    addPermissionsToList(list, (IContainer) pobj);
                 }
-                if (pclass.isInstance(IPermission.class)) {
-                    ClassDescription cd = cds.getClassFor(cls);
-                    if (cd.getDocComment() != null) {
-                        addPermissionToList(list, (IPermission) pclass.newInstance(), cd.getDocComment().toString());
-                    } else {
-                        addPermissionToList(list, (IPermission) pclass.newInstance());
-                    }
-                }*/
             } catch (ClassNotFoundException e) {
                 throw new MojoFailureException("registeredPermission class not found: " + cls);
             } catch (InstantiationException e) {
@@ -255,8 +302,9 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         
         return list;
     }
-    private void addPermissionsToList(Map<String, Object> list, IPermissionContainer perms) {
+    private void addPermissionsToList(Map<String, Object> list, IContainer perms) {
         for (IPermission perm : perms.getPermissions()) {
+            getLog().debug("  Has PermissionChild: "+perm.getFullString()+" <"+perm.getClass().getName()+">");
             DocComment dc = getContainerPropertyDoc(perms, perm);
             if (dc != null) {
                 addPermissionToList(list, perm, dc.getDescription());
@@ -277,7 +325,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
             addPermissionToList(list, perm, null);
         }
     }
-    private DocComment getContainerPropertyDoc(IPermissionContainer set, IPermission perm) {
+    private DocComment getContainerPropertyDoc(IContainer set, IPermission perm) {
         ClassDescription cd = cds.getClassFor(set);
         Class<?> cls = set.getClass();
         for (Field field : cls.getFields()) {
@@ -314,7 +362,8 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         return null;
     }
     private void addPermissionToList(Map<String, Object> list, IPermission perm, String description) {
-        Map<String, Object> data = new HashMap<String, Object>();
+        getLog().debug("   Describe IPermission "+perm.getFullString());
+        Map<String, Object> data = new LinkedHashMap<String, Object>();
         if (perm.getDefault() == PermissionDefault.TRUE) {
             data.put("default", true);
         } else if (perm.getDefault() == PermissionDefault.FALSE) {
@@ -327,63 +376,16 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         } else if (description != null) {
             data.put("description", description);
         }
+        if (perm instanceof IChildPermissionContainer) {
+            getLog().debug("   Is IChildPermissionContainer");
+            Map<String, Boolean> clist = new LinkedHashMap<String, Boolean>();
+            for (Map.Entry<IPermission, Boolean> child : ((IChildPermissionContainer) perm).getChilds().entrySet()) {
+                getLog().debug("     "+child);
+                clist.put(child.getKey().getFullString(), child.getValue());
+            }
+            if (clist.size() > 0)
+                data.put("children", clist);
+        }
         list.put(perm.getFullString(), data);
     }
-    /*
-    private Map<String, String> _descriptions = null;
-    @SuppressWarnings("unchecked")
-    private Map<String, String> loadDescriptions() {
-        if (_descriptions == null) {
-            _descriptions = new HashMap<String, String>();
-            File file = new File(this.directory + "/descriptions.xml");
-            
-            Properties prop = new Properties();
-            try {
-                prop.loadFromXML(new FileInputStream(file));
-            } catch (InvalidPropertiesFormatException e) {
-                e.printStackTrace();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            
-            for (Entry<Object, Object> property : prop.entrySet()) {
-                String[] cls = property.getKey().toString().split("#");
-                
-                try {
-                    IPermission permission = null;
-                    Class<?> permclass = Class.forName(cls[0]);
-                    if (cls.length > 1) {
-                        Field field = permclass.getField(cls[1]);
-                        if (field != null && Modifier.isStatic(field.getModifiers())) {
-                            permission = (IPermission) field.get(null);
-                        }
-                    } else {
-                        if (permclass.isInstance(IPermission.class)) {
-                            permission = ((Class<? extends IPermission>) permclass).newInstance();
-                        }
-                    }
-                    if (permission != null)
-                        _descriptions.put(permission.getFullString(), (String) property.getValue());
-                } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (SecurityException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (NoSuchFieldException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-        }
-        return _descriptions;
-    }*/
 }

@@ -4,7 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.material.MaterialData;
 
 public class Utils {
-    public static MaterialData parseMaterial(String m) throws MaterilNotRecognizedException, MaterialDataNotRecognizedException {
+    public static MaterialData parseMaterial(String m) throws MaterialNotRecognizedException, MaterialDataNotRecognizedException {
         int d = -1;
         if (m.contains(":")) {
             String[] t = m.split(":");
@@ -24,7 +24,7 @@ public class Utils {
             e = Material.matchMaterial(m);
         }
         if (e == null)
-            throw new MaterilNotRecognizedException();
+            throw new MaterialNotRecognizedException();
         if (d != -1)
             return new MaterialData(e, (byte) d);
         else

@@ -22,16 +22,9 @@ public class i18n {
     public i18n() {
         useBundle(null, null);
     }
-    protected i18n(boolean do_init) {
-        if (do_init)
-            useBundle(null, null);
-    }
     
-    private void useBundle(String bundleName, Locale locale) {
-        if (locale == null)
-            bundle = ResourceBundle.getBundle(bundleName);
-        else
-            bundle = ResourceBundle.getBundle(bundleName, locale);
+    protected void useBundle(String bundleName, Locale locale) {
+        bundle = new MultipleResourceBundle(locale, new String[]{"de.jaschastarke.bukkit.messages", bundleName});
     }
     
     public ResourceBundle getResourceBundle() {
