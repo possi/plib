@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 public class DocComment implements Serializable {
     private static final long serialVersionUID = -6500262229790513118L;
-    private static final Pattern ANNOT_REGEX = Pattern.compile("^\\s*@(\\w+)\\s+(.*)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ANNOT_REGEX = Pattern.compile("^\\s*@(\\w+)(?:\\s+(.*))?$", Pattern.CASE_INSENSITIVE);
     
     protected String doc;
     
@@ -67,7 +67,7 @@ public class DocComment implements Serializable {
             } else {
                 if (ANNOT_REGEX.matcher(lines[i]).matches()) {
                     break;
-                } else {
+                } else if (longDescStarted) {
                     if (!newline)
                         comment += " ";
                     comment += lines[i].trim();
@@ -88,7 +88,7 @@ public class DocComment implements Serializable {
                 comment += " " + lines[i].trim();
             } else {
                 if (line.matches() && string.equals(line.group(1))) {
-                    comment = line.group(2).trim();
+                    comment = line.group(2) == null ? "" : line.group(2).trim();
                 }
             }
         }
