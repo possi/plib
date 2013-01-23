@@ -39,14 +39,14 @@ public class i18n {
     }
     
     public static Locale getLocaleFromString(String locale) {
-        Matcher match = Pattern.compile("^([a-z]+)(?:[-_]([A-Z]+)(?:[-_].*))?)?$").matcher(locale);
+        Matcher match = Pattern.compile("^([a-z]+)(?:[-_]([A-Za-z]+)(?:[-_](.*))?)?$").matcher(locale);
         if (!match.matches())
-            throw new IncompleteArgumentException("Locale-String could ne be interpreted: "+locale);
-        if (match.group(2) != null)
-            return new Locale(match.group(0), match.group(1), match.group(2));
-        else if (match.group(1) != null)
-            return new Locale(match.group(0), match.group(1));
+            throw new IncompleteArgumentException("Locale-String could not be interpreted: "+locale);
+        if (match.group(3) != null)
+            return new Locale(match.group(1), match.group(2), match.group(3));
+        else if (match.group(2) != null)
+            return new Locale(match.group(1), match.group(2));
         else
-            return new Locale(match.group(0));
+            return new Locale(match.group(1));
     }
 }

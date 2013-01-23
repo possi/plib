@@ -1,13 +1,13 @@
 package de.jaschastarke.bukkit.lib.commands;
 
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class AbstractCommandList implements ICommandListing {
     protected CommandHandler handler = new CommandHandler();
     
     public AbstractCommandList() {
-        List<ICommand> commands = MethodCommand.getMethodCommandsFor(this);
-        handler.registerCommands(commands);
+        handler.registerCommands(Arrays.asList((ICommand[]) MethodCommand.getMethodCommandsFor(this)));
     }
     
     public void registerCommand(ICommand command) {

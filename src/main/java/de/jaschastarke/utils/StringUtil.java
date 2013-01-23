@@ -80,7 +80,7 @@ final public class StringUtil {
     public static String wrapLines(String multilineText, int wrapSize) {
         String[] lines = multilineText.split("\r?\n");
         for (int i = 0; i < lines.length; i++) {
-            lines[i] = WordUtils.wrap(lines[i], wrapSize);
+            lines[i] = WordUtils.wrap(lines[i], wrapSize, "\n", false);
         }
         return join(lines, "\n");
     }

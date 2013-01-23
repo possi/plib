@@ -17,14 +17,14 @@ import de.jaschastarke.bukkit.lib.commands.annotations.Usage;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 
 public class MethodCommand implements ICommand, IHelpDescribed {
-    public static List<ICommand> getMethodCommandsFor(Object obj) {
-        List<ICommand> list = new ArrayList<ICommand>();
+    public static MethodCommand[] getMethodCommandsFor(Object obj) {
+        List<MethodCommand> list = new ArrayList<MethodCommand>();
         for (Method method : obj.getClass().getMethods()) {
             if (method.getAnnotation(IsCommand.class) != null) {
                 list.add(new MethodCommand(obj, method));
             }
         }
-        return list;
+        return list.toArray(new MethodCommand[list.size()]);
     }
     
     protected Object commandclass;
@@ -119,14 +119,18 @@ public class MethodCommand implements ICommand, IHelpDescribed {
         }
     }
 
-    protected Object[] buildArguments(CommandContext context, Object[] args, int minArguments) {
-        int length = Math.max(minArguments, args.length);
+    /**
+     * @param minArguments The count of required arguments by the Method (including the command context), assuming every
+     * argument is optional (so filled with nulls)
+     */
+    protected static Object[] buildArguments(CommandContext context, Object[] args, int minArguments) {
+        int length = Math.max(minArguments, args.length + 1);
         Object[] newArgs = new Object[length];
         newArgs[0] = context;
         System.arraycopy(args, 0, newArgs, 1, args.length);
         return newArgs;
     }
-    protected Object[] buildArguments(CommandContext context, Object[] args) {
+    protected static Object[] buildArguments(CommandContext context, Object[] args) {
         return buildArguments(context, args, 0);
     }
 

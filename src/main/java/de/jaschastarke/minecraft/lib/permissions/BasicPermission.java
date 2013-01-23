@@ -27,6 +27,8 @@ public class BasicPermission implements IPermission, IPermissionChild {
 
     @Override
     public String getFullString() {
+        if (parent == null)
+            return name;
         return parent.getFullString() + SEP + name;
     }
 
