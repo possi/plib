@@ -14,30 +14,30 @@ public class MultipleResourceBundle extends ResourceBundle {
     private List<ResourceBundle> bundles = new ArrayList<ResourceBundle>();
     private ClassLoader loader = null;
 
-    public MultipleResourceBundle(Locale locale, Collection<String> bundleNames) {
+    public MultipleResourceBundle(final Locale locale, final Collection<String> bundleNames) {
         this.locale = locale == null ? Locale.getDefault() : locale;
         for (String bundleName : bundleNames) {
             addResourceBundle(bundleName);
         }
     }
-    public MultipleResourceBundle(Locale locale, String[] bundleNames) {
+    public MultipleResourceBundle(final Locale locale, final String[] bundleNames) {
         this.locale = locale == null ? Locale.getDefault() : locale;
         for (String bundleName : bundleNames) {
             addResourceBundle(bundleName);
         }
     }
-    public MultipleResourceBundle(Locale locale, String bundleName) {
+    public MultipleResourceBundle(final Locale locale, final String bundleName) {
         this.locale = locale == null ? Locale.getDefault() : locale;
         addResourceBundle(bundleName);
     }
-    public MultipleResourceBundle(Locale locale, String[] bundleNames, URLClassLoader loader) {
+    public MultipleResourceBundle(final Locale locale, final String[] bundleNames, final URLClassLoader loader) {
         this.locale = locale == null ? Locale.getDefault() : locale;
         this.loader = loader;
         for (String bundleName : bundleNames) {
             addResourceBundle(bundleName);
         }
     }
-    public void addResourceBundle(String bundleName) {
+    public void addResourceBundle(final String bundleName) {
         if (loader != null)
             bundles.add(ResourceBundle.getBundle(bundleName, locale, loader));
         else
@@ -50,7 +50,7 @@ public class MultipleResourceBundle extends ResourceBundle {
     }
 
     @Override
-    protected Object handleGetObject(String key) {
+    protected Object handleGetObject(final String key) {
         Object result = null;
         MissingResourceException nfe = null;
         for (ResourceBundle bundle : bundles) {

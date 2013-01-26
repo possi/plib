@@ -6,10 +6,10 @@ public class GenericHooker<T> extends AbstractHooker<GenericHooker.Check<T>> {
     }
     
     protected T def;
-    public GenericHooker(T defaultValue) {
+    public GenericHooker(final T defaultValue) {
         def = defaultValue;
     }
-    public T test(Object... objects) {
+    public T test(final Object... objects) {
         for (Check<T> c : hooks) {
             T val = c.test(objects);
             if (val != null)

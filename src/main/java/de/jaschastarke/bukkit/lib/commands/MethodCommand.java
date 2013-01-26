@@ -17,7 +17,7 @@ import de.jaschastarke.bukkit.lib.commands.annotations.Usage;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 
 public class MethodCommand implements ICommand, IHelpDescribed {
-    public static MethodCommand[] getMethodCommandsFor(Object obj) {
+    public static MethodCommand[] getMethodCommandsFor(final Object obj) {
         List<MethodCommand> list = new ArrayList<MethodCommand>();
         for (Method method : obj.getClass().getMethods()) {
             if (method.getAnnotation(IsCommand.class) != null) {
@@ -34,9 +34,9 @@ public class MethodCommand implements ICommand, IHelpDescribed {
     protected String usage;
     protected CharSequence description;
     protected IAbstractPermission[] permissions;
-    protected IAbstractPermission[] related_permissions;
+    protected IAbstractPermission[] relatedPermissions;
     
-    public MethodCommand(Object commandcls, Method method) {
+    public MethodCommand(final Object commandcls, final Method method) {
         commandclass = commandcls;
         this.method = method;
         
@@ -51,7 +51,7 @@ public class MethodCommand implements ICommand, IHelpDescribed {
         
         List<String> als = new ArrayList<String>();
         List<IAbstractPermission> perms = new ArrayList<IAbstractPermission>();
-        List<IAbstractPermission> opt_perms = new ArrayList<IAbstractPermission>();
+        List<IAbstractPermission> optPerms = new ArrayList<IAbstractPermission>();
         
         for (Annotation annot : method.getAnnotations()) {
             if (annot instanceof Alias) {
@@ -61,9 +61,9 @@ public class MethodCommand implements ICommand, IHelpDescribed {
                     for (String permnode : ((NeedsPermission) annot).value()) {
                         IAbstractPermission perm = ((IMethodCommandContainer) commandclass).getPermission(permnode);
                         if (perm == null)
-                            throw new IllegalArgumentException("Permission "+permnode+" not found in "+commandclass.getClass().getName());
+                            throw new IllegalArgumentException("Permission " + permnode + " not found in " + commandclass.getClass().getName());
                         
-                        opt_perms.add(perm);
+                        optPerms.add(perm);
                         if (!((NeedsPermission) annot).optional())
                             perms.add(perm);
                     }
@@ -81,10 +81,10 @@ public class MethodCommand implements ICommand, IHelpDescribed {
         }
         aliases = als.toArray(new String[als.size()]);
         permissions = perms.toArray(new IAbstractPermission[perms.size()]);
-        related_permissions = opt_perms.toArray(new IAbstractPermission[opt_perms.size()]);
+        relatedPermissions = optPerms.toArray(new IAbstractPermission[optPerms.size()]);
     }
     
-    private void checkPermissions(CommandContext context) throws MissingPermissionCommandException {
+    private void checkPermissions(final CommandContext context) throws MissingPermissionCommandException {
         for (IAbstractPermission perm : permissions) {
             if (!context.checkPermission(perm))
                 throw new MissingPermissionCommandException(perm);
@@ -102,7 +102,7 @@ public class MethodCommand implements ICommand, IHelpDescribed {
     }
     
     @Override
-    public boolean execute(CommandContext context, String[] args) throws MissingPermissionCommandException, CommandException {
+    public boolean execute(final CommandContext context, final String[] args) throws MissingPermissionCommandException, CommandException {
         checkPermissions(context);
         try {
             return (Boolean) method.invoke(commandclass, buildArguments(context, args, method.getParameterTypes().length));
@@ -123,14 +123,14 @@ public class MethodCommand implements ICommand, IHelpDescribed {
      * @param minArguments The count of required arguments by the Method (including the command context), assuming every
      * argument is optional (so filled with nulls)
      */
-    protected static Object[] buildArguments(CommandContext context, Object[] args, int minArguments) {
+    protected static Object[] buildArguments(final CommandContext context, final Object[] args, final int minArguments) {
         int length = Math.max(minArguments, args.length + 1);
         Object[] newArgs = new Object[length];
         newArgs[0] = context;
         System.arraycopy(args, 0, newArgs, 1, args.length);
         return newArgs;
     }
-    protected static Object[] buildArguments(CommandContext context, Object[] args) {
+    protected static Object[] buildArguments(final CommandContext context, final Object[] args) {
         return buildArguments(context, args, 0);
     }
 

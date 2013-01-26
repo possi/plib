@@ -19,27 +19,27 @@ import de.jaschastarke.bukkit.lib.chat.InGameFormatter;
 public class BukkitCommandHandler implements CommandExecutor, ICommandListing {
     protected Core plugin;
     protected Map<Command, ICommand> commands = new HashMap<Command, ICommand>();
-    public BukkitCommandHandler(Core plugin) {
+    public BukkitCommandHandler(final Core plugin) {
         this.plugin = plugin;
     }
     
-    public void registerCommand(ICommand cmd) {
+    public void registerCommand(final ICommand cmd) {
         PluginCommand bcmd = plugin.getCommand(cmd.getName());
         if (bcmd == null)
-            throw new IllegalArgumentException("Command "+cmd.getName()+" isn't registered for this plugin. Check plugin.yml");
+            throw new IllegalArgumentException("Command " + cmd.getName() + " isn't registered for this plugin. Check plugin.yml");
         commands.put(bcmd, cmd);
         if (cmd instanceof BukkitCommand)
             ((BukkitCommand) cmd).setBukkitCommand(bcmd);
         bcmd.setExecutor(this);
     }
-    public void removeCommand(ICommand cmd) {
+    public void removeCommand(final ICommand cmd) {
         PluginCommand bcmd = plugin.getCommand(cmd.getName());
         if (bcmd != null) {
             commands.remove(bcmd);
             bcmd.setExecutor(null);
         }
     }
-    public void removeCommand(String cmd) {
+    public void removeCommand(final String cmd) {
         PluginCommand bcmd = plugin.getCommand(cmd);
         if (bcmd != null) {
             commands.remove(bcmd);
@@ -52,10 +52,10 @@ public class BukkitCommandHandler implements CommandExecutor, ICommandListing {
     }
     
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
         ICommand cmd = commands.get(command);
         if (cmd == null)
-            throw new IllegalArgumentException("Not to handler registered command fired: "+command.getName());
+            throw new IllegalArgumentException("Not to handler registered command fired: " + command.getName());
         CommandContext context = createContext(sender);
         try {
             context.addHandledCommand(cmd, label);
@@ -69,7 +69,7 @@ public class BukkitCommandHandler implements CommandExecutor, ICommandListing {
         }
     }
     
-    public CommandContext createContext(CommandSender sender) {
+    public CommandContext createContext(final CommandSender sender) {
         CommandContext context = new CommandContext(sender);
         context.setPlugin(plugin);
         context.setPermissinManager(plugin.getPermManager());
@@ -79,7 +79,7 @@ public class BukkitCommandHandler implements CommandExecutor, ICommandListing {
     }
     
     private Map<Object, IFormatter> formatter = new HashMap<Object, IFormatter>();
-    protected IFormatter getFormatter(CommandSender sender) {
+    protected IFormatter getFormatter(final CommandSender sender) {
         if (sender instanceof ConsoleCommandSender) {
             if (!formatter.containsKey(ConsoleCommandSender.class))
                 formatter.put(ConsoleCommandSender.class, new ConsoleFormatter(plugin.getLang()));

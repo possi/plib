@@ -1,7 +1,7 @@
 package de.jaschastarke.modularize;
 
 public class InvalidStateException extends RuntimeException {
-    public InvalidStateException(String string) {
+    public InvalidStateException(final String string) {
         super(string);
     }
 

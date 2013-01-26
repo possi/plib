@@ -28,23 +28,23 @@ public class AnnotationProcessor extends AbstractProcessor {
     /**
      * Workaround because processor is called twice by maven-compiler-plugin
      */
-    private static boolean already_run = false;
+    private static boolean alreadyRun = false;
     
     private Elements elementUtils;
     //private Types typeUtils;
 
     @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
+    public synchronized void init(final ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         elementUtils = processingEnv.getElementUtils();
         //typeUtils = processingEnv.getTypeUtils();
     }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        if (already_run)
+    public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+        if (alreadyRun)
             return false;
-        already_run = true;
+        alreadyRun = true;
         
         ClassDescriptorStorage cds = ClassDescriptorStorage.getInstance();
         

@@ -14,11 +14,13 @@ import java.util.Map;
 
 import org.apache.commons.lang.ClassUtils;
 
-public class ClassDescriptorStorage implements Serializable {
+public final class ClassDescriptorStorage implements Serializable {
     private static final long serialVersionUID = -8882669403001425791L;
+    private static final String NEWLINE = "\n";
     
     private static ClassDescriptorStorage instance = null;
-    private ClassDescriptorStorage() {}
+    private ClassDescriptorStorage() {
+    }
     public static ClassDescriptorStorage getInstance() {
         if (instance == null)
             instance = new ClassDescriptorStorage();
@@ -26,7 +28,7 @@ public class ClassDescriptorStorage implements Serializable {
     }
     
     private Map<String, ClassDescription> descriptions = new HashMap<String, ClassDescription>();
-    public ClassDescription getClassFor(String cls) {
+    public ClassDescription getClassFor(final String cls) {
         if (!descriptions.containsKey(cls)) {
             ClassDescription desc = new ClassDescription(cls);
             descriptions.put(cls, desc);
@@ -34,14 +36,14 @@ public class ClassDescriptorStorage implements Serializable {
         }
         return descriptions.get(cls);
     }
-    public ClassDescription getClassFor(Class<?> cls) {
+    public ClassDescription getClassFor(final Class<?> cls) {
         return getClassFor(cls.getName());
     }
-    public ClassDescription getClassFor(Object cls) {
+    public ClassDescription getClassFor(final Object cls) {
         return getClassFor(cls.getClass().getName());
     }
     
-    public void store(File file) {
+    public void store(final File file) {
         OutputStream fos = null;
         ObjectOutputStream o = null;
         
@@ -52,7 +54,7 @@ public class ClassDescriptorStorage implements Serializable {
           o = new ObjectOutputStream(fos);
           o.writeObject(this);
         } catch (IOException e) {
-            System.err.println( e );
+            throw new RuntimeException(e);
         } finally {
             try {
                 o.close();
@@ -62,7 +64,7 @@ public class ClassDescriptorStorage implements Serializable {
             }
         }
     }
-    public static ClassDescriptorStorage load(File file) throws IOException {
+    public static ClassDescriptorStorage load(final File file) throws IOException {
         InputStream fis = null;
         fis = new FileInputStream(file);
         load(fis);
@@ -70,10 +72,10 @@ public class ClassDescriptorStorage implements Serializable {
         return instance;
     }
 
-    public static ClassDescriptorStorage load(InputStream resource) throws IOException {
+    public static ClassDescriptorStorage load(final InputStream resource) throws IOException {
         ObjectInputStream o = null;
 
-        try {;
+        try {
           o = new ObjectInputStream(resource);
           instance = (ClassDescriptorStorage) o.readObject();
         } catch (ClassNotFoundException e) {
@@ -92,7 +94,7 @@ public class ClassDescriptorStorage implements Serializable {
     public String toString() {
         String str = "";
         for (Map.Entry<String, ClassDescription> entry : descriptions.entrySet()) {
-            str += entry.getValue().toString()+"\n";
+            str += entry.getValue().toString() + NEWLINE;
         }
         return str.trim();
     }
@@ -102,22 +104,22 @@ public class ClassDescriptorStorage implements Serializable {
         
         private String name;
         private DocComment comment;
-        private Map<String, DocComment> el_comments = new HashMap<String, DocComment>();
+        private Map<String, DocComment> elComments = new HashMap<String, DocComment>();
         
-        public ClassDescription(String cls) {
+        public ClassDescription(final String cls) {
             name = cls;
         }
-        public void setDocComment(String doc) {
+        public void setDocComment(final String doc) {
             comment = new DocComment(doc);
         }
-        public void setElDocComment(String el, String doc) {
-            el_comments.put(el, new DocComment(doc));
+        public void setElDocComment(final String el, final String doc) {
+            elComments.put(el, new DocComment(doc));
         }
         public DocComment getDocComment() {
             return comment;
         }
-        public DocComment getElDocComment(String el) {
-            return el_comments.get(el);
+        public DocComment getElDocComment(final String el) {
+            return elComments.get(el);
         }
         public Class<?> getTheClass() throws ClassNotFoundException {
             return ClassUtils.getClass(name);
@@ -126,8 +128,8 @@ public class ClassDescriptorStorage implements Serializable {
         @Override
         public String toString() {
             String str = name + ":\n";
-            for (Map.Entry<String, DocComment> el : el_comments.entrySet()) {
-                str += "  " + el.getKey() + ": " + el.getValue().toString()+"\n";
+            for (Map.Entry<String, DocComment> el : elComments.entrySet()) {
+                str += "  " + el.getKey() + ": " + el.getValue().toString() + NEWLINE;
             }
             return str;
         }

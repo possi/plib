@@ -7,10 +7,14 @@ import java.util.regex.Pattern;
 public class DocComment implements Serializable {
     private static final long serialVersionUID = -6500262229790513118L;
     private static final Pattern ANNOT_REGEX = Pattern.compile("^\\s*@(\\w+)(?:\\s+(.*))?$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern NEWLINE_REGEX = Pattern.compile("\r?\n");
+    private static final String SPACE = " ";
+    private static final String NEWLINE = "\n";
+    private static final String NEWPARAGRAPH = "\n\n";
     
     protected String doc;
     
-    public DocComment(String comment) {
+    public DocComment(final String comment) {
         doc = comment;
     }
     @Override
@@ -19,18 +23,18 @@ public class DocComment implements Serializable {
     }
     public String getDescription() {
         String comment = "";
-        String[] lines = doc.split("\r?\n");
+        String[] lines = NEWLINE_REGEX.split(doc);
         boolean newline = true;
         for (int i = 0; i < lines.length; i++) {
             if (lines[i].trim().isEmpty()) {
-                comment += newline ? "\n" : "\n\n";
+                comment += newline ? NEWLINE : NEWPARAGRAPH;
                 newline = true;
             } else {
                 if (ANNOT_REGEX.matcher(lines[i]).matches()) {
                     break;
                 } else {
                     if (!newline)
-                        comment += " ";
+                        comment += SPACE;
                     comment += lines[i].trim();
                     newline = false;
                 }
@@ -40,13 +44,13 @@ public class DocComment implements Serializable {
     }
     public String getShortDesc() {
         String comment = "";
-        String[] lines = doc.split("\r?\n");
+        String[] lines = NEWLINE_REGEX.split(doc);
         for (int i = 0; i < lines.length; i++) {
             if (lines[i].trim().isEmpty() || ANNOT_REGEX.matcher(lines[i]).matches()) {
                 break;
             } else {
                 if (i > 0)
-                    comment += " ";
+                    comment += SPACE;
                 comment += lines[i].trim();
             }
         }
@@ -55,21 +59,21 @@ public class DocComment implements Serializable {
     public String getLongDesc() {
         boolean longDescStarted = false;
         String comment = "";
-        String[] lines = doc.split("\r?\n");
+        String[] lines = NEWLINE_REGEX.split(doc);
         boolean newline = true;
         for (int i = 0; i < lines.length; i++) {
             if (lines[i].trim().length() == 0) {
                 if (!longDescStarted)
                     longDescStarted = true;
                 else
-                    comment += "\n\n";
+                    comment += NEWPARAGRAPH;
                 newline = true;
             } else {
                 if (ANNOT_REGEX.matcher(lines[i]).matches()) {
                     break;
                 } else if (longDescStarted) {
                     if (!newline)
-                        comment += " ";
+                        comment += SPACE;
                     comment += lines[i].trim();
                     newline = false;
                 }
@@ -77,15 +81,15 @@ public class DocComment implements Serializable {
         }
         return comment;
     }
-    public String getAnnotationValue(String string) {
+    public String getAnnotationValue(final String string) {
         String comment = null;
-        String[] lines = doc.split("\r?\n");
+        String[] lines = NEWLINE_REGEX.split(doc);
         for (int i = 0; i < lines.length; i++) {
             Matcher line = ANNOT_REGEX.matcher(lines[i]);
             if (comment != null) {
                 if (line.matches() || lines[i].trim().isEmpty())
                     break;
-                comment += " " + lines[i].trim();
+                comment += SPACE + lines[i].trim();
             } else {
                 if (line.matches() && string.equals(line.group(1))) {
                     comment = line.group(2) == null ? "" : line.group(2).trim();

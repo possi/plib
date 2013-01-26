@@ -6,10 +6,10 @@ public class LocaleString implements CharSequence, Comparable<String>, Serializa
     private static final long serialVersionUID = 726492298397484523L;
     
     private String value;
-    private String trans_value = null;
+    private String transValue = null;
     private Object[] objects;
     
-    public LocaleString(String value, Object... objects) {
+    public LocaleString(final String value, final Object... objects) {
         this.value = value;
         this.objects = objects;
     }
@@ -23,24 +23,24 @@ public class LocaleString implements CharSequence, Comparable<String>, Serializa
     }
     
     public boolean isTranslated() {
-        return trans_value != null;
+        return transValue != null;
     }
     
     public String toString() {
-        return trans_value == null ? trans_value : value;
+        return transValue != null ? transValue : value;
     }
     
-    public String translate(i18n lang) {
-        trans_value = lang.trans(value, objects);
-        return trans_value;
+    public String translate(final I18n lang) {
+        transValue = lang.trans(value, objects);
+        return transValue;
     }
     
     @Override
-    public int compareTo(String o) {
+    public int compareTo(final String o) {
         return toString().compareTo(o.toString());
     }
     @Override
-    public char charAt(int arg0) {
+    public char charAt(final int arg0) {
         return toString().charAt(arg0);
     }
     @Override
@@ -48,7 +48,7 @@ public class LocaleString implements CharSequence, Comparable<String>, Serializa
         return toString().length();
     }
     @Override
-    public CharSequence subSequence(int arg0, int arg1) {
+    public CharSequence subSequence(final int arg0, final int arg1) {
         return toString().subSequence(arg0, arg1);
     }
 

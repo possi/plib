@@ -17,7 +17,7 @@ public class CommandHandler {
         return commands;
     }
 
-    public ICommand getCommand(String name) {
+    public ICommand getCommand(final String name) {
         for (ICommand command : commands) {
             if (command.getName().equals(name))
                 return command;
@@ -28,25 +28,25 @@ public class CommandHandler {
     /*public void registerCommands(ICommandListing commands) {
         registerCommands(commands.getCommands());
     }*/
-    public void registerCommands(List<ICommand> cmds) {
+    public void registerCommands(final List<ICommand> cmds) {
         commands.addAll(cmds);
     }
 
     /*public void removeCommands(ICommandListing commands) {
         removeCommands(commands);
     }*/
-    public void removeCommands(List<ICommand> cmds) {
+    public void removeCommands(final List<ICommand> cmds) {
         commands.removeAll(cmds);
     }
 
-    public void registerCommand(ICommand command) {
+    public void registerCommand(final ICommand command) {
         commands.add(command);
     }
-    public void removeCommand(ICommand command) {
+    public void removeCommand(final ICommand command) {
         commands.remove(command);
     }
 
-    public boolean execute(CommandContext context, String[] args) throws MissingPermissionCommandException, CommandException {
+    public boolean execute(final CommandContext context, final String[] args) throws MissingPermissionCommandException, CommandException {
         Validate.notEmpty(args, "Can not execute no command");
         String name = args[0];
         Validate.notEmpty(name, "Can not execute empty command");

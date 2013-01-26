@@ -11,18 +11,18 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class EventHandlerList {
     private List<Listener> listeners = new ArrayList<Listener>();
     private JavaPlugin plugin;
-    public EventHandlerList(JavaPlugin plugin) {
+    public EventHandlerList(final JavaPlugin plugin) {
         this.plugin = plugin; 
     }
-    public void registerEvents(Listener eventListener) {
+    public void registerEvents(final Listener eventListener) {
         addListener(eventListener);
         listenTo(eventListener);
     }
-    public void addListener(Listener eventListener) {
+    public void addListener(final Listener eventListener) {
         if (!listeners.contains(eventListener))
             listeners.add(eventListener);
     }
-    protected void removeEvents(Listener eventListener) {
+    protected void removeEvents(final Listener eventListener) {
         HandlerList.unregisterAll(eventListener);
         listeners.remove(eventListener);
     }
@@ -43,7 +43,7 @@ public class EventHandlerList {
             listenTo(listener);
         }
     }
-    private void listenTo(Listener eventListener) {
+    private void listenTo(final Listener eventListener) {
         plugin.getServer().getPluginManager().registerEvents(eventListener, plugin);
     }
 }

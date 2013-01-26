@@ -11,11 +11,11 @@ public class BasicPermission implements IPermission, IPermissionChild {
     private String name;
     private List<IPermission> parents = new ArrayList<IPermission>();
     
-    public BasicPermission(IAbstractPermission parent, String name) {
+    public BasicPermission(final IAbstractPermission parent, final String name) {
         this.parent = parent;
         this.name = name;
     }
-    public BasicPermission(IAbstractPermission parent, String name, PermissionDefault defaultValue) {
+    public BasicPermission(final IAbstractPermission parent, final String name, final PermissionDefault defaultValue) {
         this.parent = parent;
         this.name = name;
         this.def = defaultValue;
@@ -42,8 +42,8 @@ public class BasicPermission implements IPermission, IPermissionChild {
     }
     
     @Override
-    public void addParentPermission(IPermission parent) {
-        parents.add(parent);
+    public void addParentPermission(final IPermission pParent) {
+        parents.add(pParent);
     }
     
     public IPermission[] getParentPermissions() {

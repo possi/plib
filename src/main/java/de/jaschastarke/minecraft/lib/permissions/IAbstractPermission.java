@@ -1,7 +1,7 @@
 package de.jaschastarke.minecraft.lib.permissions;
 
-abstract public interface IAbstractPermission {
-    public final static String SEP = ".";
+public abstract interface IAbstractPermission {
+    public static final String SEP = ".";
     
     public String toString();
     public IAbstractPermission getParent();

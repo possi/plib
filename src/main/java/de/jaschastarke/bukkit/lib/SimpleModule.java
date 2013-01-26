@@ -14,14 +14,14 @@ import de.jaschastarke.modularize.ModuleManager;
  * When the Module is instanceof Bukkit Event Listener-Interface, it is automatically registered.
  *
  */
-abstract public class SimpleModule <E extends Core> extends AbstractModule implements IHasModules {
+public abstract class SimpleModule <E extends Core> extends AbstractModule implements IHasModules {
     protected E plugin;
     public boolean debug = false;
     protected EventHandlerList listeners;
     private ModuleLogger log = null;
     protected boolean enabled = false;
     
-    public SimpleModule(E plugin) {
+    public SimpleModule(final E plugin) {
         this.plugin = plugin;
         listeners = new EventHandlerList(plugin);
         if (this instanceof Listener)
@@ -40,13 +40,13 @@ abstract public class SimpleModule <E extends Core> extends AbstractModule imple
     }
     
     @Override
-    public void OnEnable() {
+    public void onEnable() {
         enabled = true;
         modules.activateAll();
         listeners.registerAllEvents();
     }
     @Override
-    public void OnDisable() {
+    public void onDisable() {
         enabled = false;
         modules.disableAll();
         listeners.unregisterAllEvents();
@@ -58,11 +58,11 @@ abstract public class SimpleModule <E extends Core> extends AbstractModule imple
     /* IHasModules */
     protected ModuleManager modules = new ModuleManager();
     @Override
-    public <T extends IModule> ModuleEntry<T> addModule(T module) {
+    public <T extends IModule> ModuleEntry<T> addModule(final T module) {
         return modules.addModule(module);
     }
     @Override
-    public <T extends IModule> T getModule(Class<T> module) {
+    public <T extends IModule> T getModule(final Class<T> module) {
         return modules.getModuleType(module);
     }
 }

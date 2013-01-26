@@ -1,5 +1,7 @@
 package de.jaschastarke.modularize;
 
+import java.text.MessageFormat;
+
 public class ModuleEntry <T extends IModule> {
     enum ModuleState {
         ENABLED,
@@ -13,10 +15,10 @@ public class ModuleEntry <T extends IModule> {
     protected ModuleManager manager = null;
     protected T module;
     
-    public ModuleEntry(T module) {
+    public ModuleEntry(final T module) {
         this.module = module;
     }
-    public ModuleEntry(T module, ModuleManager manager) {
+    public ModuleEntry(final T module, final ModuleManager manager) {
         this.module = module;
         this.manager = manager;
     }
@@ -30,7 +32,7 @@ public class ModuleEntry <T extends IModule> {
     @SuppressWarnings("unchecked")
     public boolean initialize() {
         if (state == ModuleState.NOT_INITIALIZED) {
-            module.Initialize((ModuleEntry<IModule>) this);
+            module.initialize((ModuleEntry<IModule>) this);
             state = ModuleState.INITIALIZED;
             return true;
         }
@@ -40,7 +42,7 @@ public class ModuleEntry <T extends IModule> {
         if (state == ModuleState.NOT_INITIALIZED) {
             this.initialize();
         } else if (state != ModuleState.INITIALIZED) {
-            throw new InvalidStateException("Module "+module.getClass().getName()+" has already been initialized.");
+            throw new InvalidStateException(MessageFormat.format("Module {0} has already been initialized.", module.getClass().getName()));
         }
         if (initialState == ModuleState.ENABLED) {
             return this.enable();
@@ -54,17 +56,17 @@ public class ModuleEntry <T extends IModule> {
     
     public boolean enable() {
         if (state == ModuleState.DISABLED || state == ModuleState.INITIALIZED) {
-            module.OnEnable();
+            module.onEnable();
             this.state = ModuleState.ENABLED;
             return true;
         } else if (state == ModuleState.NOT_INITIALIZED) {
-            throw new InvalidStateException("Module "+module.getClass().getName()+" not yet initialized.");
+            throw new InvalidStateException(MessageFormat.format("Module {0} not yet initialized.", module.getClass().getName()));
         }
         return false;
     }
     public boolean disable() {
         if (state == ModuleState.ENABLED) {
-            module.OnDisable();
+            module.onDisable();
             this.state = ModuleState.DISABLED;
             return true;
         }

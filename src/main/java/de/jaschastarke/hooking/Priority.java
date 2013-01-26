@@ -8,7 +8,7 @@ public enum Priority {
     HIGHEST(2);
     
     protected int prio;
-    private Priority(int val) {
+    private Priority(final int val) {
         prio = val;
     }
     public int getValue() {

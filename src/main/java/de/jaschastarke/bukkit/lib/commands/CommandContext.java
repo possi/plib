@@ -18,17 +18,17 @@ public class CommandContext {
     private IFormatter formatter;
     private Map<ICommand, String> commandchain = new LinkedHashMap<ICommand, String>();
     
-    public CommandContext(CommandSender sender) {
+    public CommandContext(final CommandSender sender) {
         this.sender = sender;
     }
-    public void response(String msg) {
+    public void response(final String msg) {
         // TODO: IMPORTANT: MAKE BETTER HANDLED
         sender.sendMessage(msg);
     }
     public CommandSender getSender() {
         return sender;
     }
-    public boolean checkPermission(IAbstractPermission perm) {
+    public boolean checkPermission(final IAbstractPermission perm) {
         return getPermissionManager().hasPermission(sender, perm);
     }
     public boolean isPlayer() {
@@ -40,25 +40,25 @@ public class CommandContext {
     public PermissionManager getPermissionManager() {
         return permhandler;
     }
-    public void setPermissinManager(PermissionManager permhandler) {
-        this.permhandler = permhandler;
+    public void setPermissinManager(final PermissionManager pPermhandler) {
+        this.permhandler = pPermhandler;
     }
     public Core getPlugin() {
         return plugin;
     }
-    public void setPlugin(Core plugin) {
-        this.plugin = plugin;
+    public void setPlugin(final Core pPlugin) {
+        this.plugin = pPlugin;
     }
     public IFormatter getFormatter() {
         return formatter;
     }
-    public void setFormatter(IFormatter formatter) {
-        this.formatter = formatter;
+    public void setFormatter(final IFormatter pFormatter) {
+        this.formatter = pFormatter;
     }
-    public void addHandledCommand(ICommand command, String usedAlias) {
+    public void addHandledCommand(final ICommand command, final String usedAlias) {
         commandchain.put(command, usedAlias);
     }
-    public void addHandledCommand(ICommand command) {
+    public void addHandledCommand(final ICommand command) {
         addHandledCommand(command, command.getName());
     }
     public Map<ICommand, String> getCommandChain() {

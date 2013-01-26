@@ -1,6 +1,6 @@
 package de.jaschastarke.bukkit.lib.commands;
 
-abstract public class AbstractCommand extends AbstractCommandList implements ICommand {
+public abstract class AbstractCommand extends AbstractCommandList implements ICommand {
     protected ICommand helpcommand = null;
     
     public AbstractCommand() {
@@ -18,12 +18,16 @@ abstract public class AbstractCommand extends AbstractCommandList implements ICo
     }
 
     @Override
-    public boolean execute(CommandContext context, String[] args) throws MissingPermissionCommandException, CommandException {
+    public boolean execute(final CommandContext context, final String[] args) throws MissingPermissionCommandException, CommandException {
         if ((args.length == 0 || args[0].isEmpty()) && helpcommand != null && helpcommand instanceof ICommandListHelp) {
             return ((ICommandListHelp) helpcommand).executeCommandList(context);
         } else if (args.length == 0 || args[0].isEmpty()) {
             return false;
         }
-        return handler.execute(context, args);
+        boolean resp = handler.execute(context, args);
+        if (!resp && helpcommand != null) {
+            return helpcommand.execute(context, args);
+        }
+        return resp;
     }
 }

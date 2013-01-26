@@ -10,7 +10,7 @@ public class BooleanHooker extends AbstractHooker<BooleanHooker.Check> {
         boolean test();
     }
     protected boolean def;
-    public BooleanHooker(boolean defaultValue) {
+    public BooleanHooker(final boolean defaultValue) {
         def = defaultValue;
     }
     public boolean test() {

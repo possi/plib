@@ -7,19 +7,21 @@ import de.jaschastarke.bukkit.lib.Core;
 
 public abstract class PluginConfiguration extends Configuration {
     protected Core plugin;
+
     protected File file;
-    public PluginConfiguration(Core plugin) {
-        super(plugin.getConfig());
+    public PluginConfiguration(final Core plugin) {
+        super();
         this.plugin = plugin;
+        setValues(plugin.getConfig());
         file = new File(plugin.getDataFolder(), "config.yml");
     }
     
     public void save() {
-        ConfigurationDumper dumper = new ConfigurationDumper(this);
+        YamlConfigurationDumper dumper = new YamlConfigurationDumper(this);
         try {
             dumper.store(file);
         } catch (IOException e) {
-            plugin.getLog().severe("Failed to write Configuration to "+file.getAbsolutePath());
+            plugin.getLog().severe("Failed to write Configuration to " + file.getAbsolutePath());
         }
     }
     

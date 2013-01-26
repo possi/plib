@@ -1,7 +1,7 @@
 package de.jaschastarke.modularize;
 
 public interface IModule {
-    public void Initialize(ModuleEntry<IModule> entry);
-    public void OnEnable();
-    public void OnDisable();
+    public void initialize(ModuleEntry<IModule> entry);
+    public void onEnable();
+    public void onDisable();
 }

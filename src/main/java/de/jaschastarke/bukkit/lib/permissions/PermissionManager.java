@@ -11,10 +11,10 @@ import de.jaschastarke.minecraft.lib.permissions.IPermissionChild;
 
 public class PermissionManager {
     //private Core plugin;
-    public PermissionManager(Core plugin) {
+    public PermissionManager(final Core plugin) {
         //this.plugin = plugin;
     }
-    public boolean hasPermission(CommandSender player, IAbstractPermission perm) {
+    public boolean hasPermission(final CommandSender player, final IAbstractPermission perm) {
         if (player.hasPermission(perm.getFullString()))
             return true;
         if (perm instanceof IPermissionChild)
@@ -22,10 +22,10 @@ public class PermissionManager {
                 return true;
         return false;
     }
-    public boolean hasSomePermission(CommandSender player, IAbstractPermission[] perms) {
+    public boolean hasSomePermission(final CommandSender player, final IAbstractPermission[] perms) {
         return hasSomePermission(player, Arrays.asList(perms));
     }
-    public boolean hasSomePermission(CommandSender player, List<IAbstractPermission> perms) {
+    public boolean hasSomePermission(final CommandSender player, final List<IAbstractPermission> perms) {
         for (IAbstractPermission perm : perms) {
             if (hasPermission(player, perm))
                 return true;

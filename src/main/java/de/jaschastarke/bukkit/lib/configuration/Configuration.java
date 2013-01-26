@@ -1,140 +1,93 @@
 package de.jaschastarke.bukkit.lib.configuration;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import org.bukkit.configuration.ConfigurationSection;
 
-import de.jaschastarke.configuration.ElementConfigurationNode;
-import de.jaschastarke.configuration.IConfigurationGroup;
+import de.jaschastarke.configuration.IChangeableConfiguration;
 import de.jaschastarke.configuration.IConfigurationNode;
 import de.jaschastarke.configuration.IConfigurationSubGroup;
-import de.jaschastarke.configuration.annotations.IsConfigurationNode;
+import de.jaschastarke.configuration.InvalidValueException;
+import de.jaschastarke.configuration.MethodConfiguration;
+import de.jaschastarke.configuration.MethodConfigurationNode;
+import de.jaschastarke.utils.ClassDescriptorStorage;
+import de.jaschastarke.utils.DocComment;
 
-public abstract class Configuration implements IConfigurationGroup {
-    /*@Override
-    public String getNodeName() {
-        if (this.getClass().getAnnotation(ConfigurationGroup.class) != null) {
-            return this.getClass().getAnnotation(ConfigurationGroup.class).value();
-        }
-        return null;
-    }*/
-    private List<IConfigurationNode> nodes = new ArrayList<IConfigurationNode>();
+/**
+ * An abstract Configuration that combines a {@see MethodConfiguration} with Bukkits ConfigurationSection
+ */
+public abstract class Configuration extends MethodConfiguration implements IChangeableConfiguration {
     protected ConfigurationSection config;
-    
-    private static final Comparator<IConfigurationNode> SORTER = new Comparator<IConfigurationNode>() {
-        @Override
-        public int compare(IConfigurationNode arg0, IConfigurationNode arg1) {
-            return new Integer(arg0.getOrder()).compareTo(new Integer(arg1.getOrder()));
-        }
-    };
+    protected DocComment comment;
     
     public Configuration() {
-        initializeConfigNodes();
+        super();
+        comment = ClassDescriptorStorage.getInstance().getClassFor(this).getDocComment();
     }
-    public Configuration(ConfigurationSection sect) {
-        initializeConfigNodes();
-        setValues(sect);
-    }
-    private void initializeConfigNodes() {
-        for (Method method : this.getClass().getMethods()) {
-            IsConfigurationNode annot = method.getAnnotation(IsConfigurationNode.class);
-            if (annot != null) {
-                ElementConfigurationNode node = new ElementConfigurationNode(method, annot);
-                nodes.add(node);
-            }
-        }
-        this.sort();
-    }
-    public void sort() {
-        if (nodes.size() > 1) {
-            Collections.sort(nodes, SORTER);
-        }
-    }
-    
-    
-    public void setValues(ConfigurationSection sect) {
+
+    public void setValues(final ConfigurationSection sect) {
         config = sect;
     }
     public ConfigurationSection getValues() {
         return config;
     }
     
-    public List<IConfigurationNode> getConfigNodes() {
-        return nodes;
+    @Override
+    public void setValue(final IConfigurationNode node, final Object pValue) throws InvalidValueException {
+        Object value = pValue;
+        if (node instanceof MethodConfigurationNode && value instanceof String) {
+            String val = (String) value;
+            MethodConfigurationNode mnode = (MethodConfigurationNode) node;
+            Class<?> type = mnode.getMethod().getReturnType();
+            if (Boolean.class.isAssignableFrom(type)) {
+                if (val.equals("true") || val.equals("on") || val.equals("1")) {
+                    value = true;
+                } else if (val.equals("false") || val.equals("off") || val.equals("0")) {
+                    value = false;
+                } else {
+                    throw new InvalidValueException("Not a boolean: " + val);
+                }
+            } else {
+                try {
+                    if (Integer.class.isAssignableFrom(type)) {
+                        value = Integer.parseInt(val);
+                    } else if (Float.class.isAssignableFrom(type)) {
+                        value = Float.parseFloat(val);
+                    } else if (Double.class.isAssignableFrom(type)) {
+                        value = Double.parseDouble(val);
+                    } else if (Long.class.isAssignableFrom(type)) {
+                        value = Long.parseLong(val);
+                    } else if (Short.class.isAssignableFrom(type)) {
+                        value = Short.parseShort(val);
+                    } else if (Byte.class.isAssignableFrom(type)) {
+                        value = Byte.parseByte(val);
+                    }
+                } catch (NumberFormatException e) {
+                    throw new InvalidValueException(e);
+                }
+            }
+        }
+        config.set(node.getName(), value);
+    }
+
+    public String getDescription() {
+        return comment != null ? comment.getDescription() : null;
     }
     
-    public <T extends IConfigurationSubGroup> T registerSection(T section) {
+    public <T extends IConfigurationSubGroup> T registerSection(final T section) {
         for (IConfigurationNode node : nodes) {
             if (node.getName() == section.getName()) {
                 throw new IllegalAccessError("A configuration node with this name is alread registered: " + section.getName());
             }
         }
         nodes.add(section);
-        if (section.getValues() == null) {
-            if (config.isConfigurationSection(section.getName()))
-                section.setValues(config.getConfigurationSection(section.getName()));
-            else
-                section.setValues(config.createSection(section.getName())); // TODO: overthink, maybe no setvalues then?
+        if (section instanceof Configuration && config != null) {
+            if (((Configuration) section).getValues() == null) {
+                if (config.isConfigurationSection(section.getName()))
+                    ((Configuration) section).setValues(config.getConfigurationSection(section.getName()));
+                else
+                    ((Configuration) section).setValues(config.createSection(section.getName()));
+            }
         }
         this.sort();
         return section;
     }
-    
-    /*
-    public Configuration(ConfigurationSection sect) {
-        config = sect;
-    }
-    public <T extends IConfigurationGroup> T registerSection(Class<T> sectionType) {
-        ConfigurationGroup annot = sectionType.getAnnotation(ConfigurationGroup.class);
-        if (annot == null || annot.value() == "")
-            throw new RuntimeException("Can not add section to configuration without a NodeName");
-        T section;
-        try {
-            if (config.contains(annot.value())) {
-                section = sectionType.getConstructor(ConfigurationSection.class).newInstance(config.getConfigurationSection(annot.value()));
-            } else {
-                section = sectionType.getConstructor(ConfigurationSection.class).newInstance(config.createSection(annot.value()));
-            }
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Failed to initialize ConfigurationGroup", e);
-        } catch (SecurityException e) {
-            throw new RuntimeException("Failed to initialize ConfigurationGroup", e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException("Failed to initialize ConfigurationGroup", e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Failed to initialize ConfigurationGroup", e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException("Failed to initialize ConfigurationGroup", e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Failed to initialize ConfigurationGroup", e);
-        }
-        registerSection(section);
-        return section;
-    }
-    
-    public IConfigurationGroup registerSection(IConfigurationGroup section) {
-        if (section.getNodeName() == null)
-            throw new RuntimeException("Can not add section to configuration without a NodeName");
-        for (IConfigurationGroup cSection : sections) {
-            if (cSection.getNodeName() == section.getNodeName()) {
-                throw new RuntimeException("A configuration group with this NodeName is alread registered: " + section.getNodeName());
-            }
-        }
-        sections.add(section);
-        return section;
-    }
-    
-    @SuppressWarnings("unchecked")
-    public <T extends IConfigurationGroup> T getSection(Class<T> sectionType) {
-        for (IConfigurationGroup cSection : sections) {
-            if (sectionType.isInstance(cSection)) {
-                return (T) cSection;
-            }
-        }
-        return null;
-    }*/
 }

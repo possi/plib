@@ -20,15 +20,15 @@ public class SimplePermissionContainer implements IContainer {
                             perms.add((IPermission) field.get(this));
                         }
                     }
-                } catch (IllegalArgumentException e) {
                 } catch (IllegalAccessException e) {
+                    throw new IllegalArgumentException(e);
                 }
             }
             permarray = perms.toArray(new IPermission[perms.size()]);
         }
         return permarray;
     }
-    public IPermission getPermission(String name) {
+    public IPermission getPermission(final String name) {
         /*List<String> parts = Arrays.asList(name.split(Pattern.quote(SEP)));
         String rest = null;
         if (parts.size() > 1) {

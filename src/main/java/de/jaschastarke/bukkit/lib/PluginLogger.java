@@ -9,26 +9,26 @@ public class PluginLogger implements ISimpleLogger {
     protected Logger log;
     protected Core plugin;
     
-    public PluginLogger(Core plugin) {
+    public PluginLogger(final Core plugin) {
         this.plugin = plugin;
         log = plugin.getLogger();
     }
-    protected String extendMessage(String msg) {
+    protected String extendMessage(final String msg) {
         return msg;
     }
     
-    public void info(String msg) {
+    public void info(final String msg) {
         log.log(Level.INFO, extendMessage(msg));
     }
-    public void debug(String msg) {
+    public void debug(final String msg) {
         if (plugin.isDebug()) {
             log.log(Level.INFO, "[DEBUG] " + extendMessage(msg));
         }
     }
-    public void severe(String msg) {
+    public void severe(final String msg) {
         log.log(Level.SEVERE, extendMessage(msg));
     }
-    public void warn(String msg) {
+    public void warn(final String msg) {
         log.log(Level.WARNING, extendMessage(msg));
     }
 }

@@ -1,8 +1,6 @@
 package de.jaschastarke.bukkit.lib.chat;
 
-import org.bukkit.OfflinePlayer;
-
-import de.jaschastarke.bukkit.lib.commands.CommandContext;
+import de.jaschastarke.LocaleString;
 
 public class NullFormatter implements IFormatter {
     @Override
@@ -15,34 +13,18 @@ public class NullFormatter implements IFormatter {
         return null;
     }
 
+
     @Override
-    public String getString(String msg, Object... params) {
+    public String getString(final LocaleString msg) {
+        return msg.toString();
+    }
+    @Override
+    public String getString(final String msg, final Object... params) {
         return msg;
     }
 
     @Override
-    public String formatPlayerName(OfflinePlayer player) {
-        return player.getName();
+    public String formatString(final IChatFormatting formating, final CharSequence msg) {
+        return msg.toString();
     }
-
-    @Override
-    public String formatPlayerExample(CommandContext context, String defaultName) {
-        return defaultName;
-    }
-
-    @Override
-    public String formatRequiredArgument(String name) {
-        return name;
-    }
-
-    @Override
-    public String formatOptionalArgument(String name) {
-        return name;
-    }
-
-    @Override
-    public String formatParameter(String param) {
-        return param;
-    }
-
 }

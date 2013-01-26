@@ -8,7 +8,7 @@ public class GetHooker<T> extends AbstractHooker<GetHooker.Check<T>> {
     protected T def = null;
     public GetHooker() {
     }
-    public GetHooker(T defaultValue) {
+    public GetHooker(final T defaultValue) {
         def = defaultValue;
     }
     public T test() {

@@ -1,20 +1,23 @@
 package de.jaschastarke.bukkit.lib.chat;
 
-import de.jaschastarke.i18n;
+import de.jaschastarke.I18n;
 
 public class InGameFormatter extends AbstractFormatter {
-    public InGameFormatter(i18n lang) {
+    public static final int CHAT_HEIGHT = 10;
+    public static final int CHAT_WIDTH = 55;
+    
+    public InGameFormatter(final I18n lang) {
         super(lang);
     }
 
     @Override
     public Integer getLineLimit() {
-        return 10;
+        return CHAT_HEIGHT;
     }
 
     @Override
     public Integer getLineLengthLimit() {
-        return 55;
+        return CHAT_WIDTH;
     }
 
 }

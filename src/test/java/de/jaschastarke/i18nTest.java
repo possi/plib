@@ -8,11 +8,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class i18nTest {
-    i18n lang;
+    I18n lang;
 
     @Before
     public void setUp() throws Exception {
-        lang = new i18n("de.jaschastarke.bukkit.test");
+        lang = new I18n("de.jaschastarke.bukkit.test");
     }
 
     @Test
@@ -23,10 +23,10 @@ public class i18nTest {
 
     @Test
     public void testGetLocaleFromString() {
-        assertEquals(Locale.US, i18n.getLocaleFromString("en_US"));
-        assertEquals(Locale.US, i18n.getLocaleFromString("en-US"));
-        assertEquals(Locale.GERMAN, i18n.getLocaleFromString("de"));
-        assertEquals(Locale.GERMANY, i18n.getLocaleFromString("de_DE"));
+        assertEquals(Locale.US, I18n.getLocaleFromString("en_US"));
+        assertEquals(Locale.US, I18n.getLocaleFromString("en-US"));
+        assertEquals(Locale.GERMAN, I18n.getLocaleFromString("de"));
+        assertEquals(Locale.GERMANY, I18n.getLocaleFromString("de_DE"));
     }
 
 }

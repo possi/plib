@@ -2,20 +2,23 @@ package de.jaschastarke.utils;
 
 import java.util.Arrays;
 
-final public class ArrayUtil {
-    public static <T> T[] getRange(T[] arr, int begin) {
+public final class ArrayUtil {
+    private ArrayUtil() {
+    }
+    public static <T> T[] getRange(final T[] arr, final int begin) {
         return getRange(arr, begin, 0);
     }
     /**
      * @param end if < 0 then is interpreted as count from end
      */
-    public static <T> T[] getRange(T[] arr, int begin, int end) {
-        if (begin < 0)
-            begin = arr.length + begin;
+    public static <T> T[] getRange(final T[] arr, final int begin, final int end) {
+        int b = begin, e = end;
+        if (b < 0)
+            b = arr.length + b;
         if (end < 1)
-            end = arr.length + end;
+            e = arr.length + e;
         
-        return Arrays.copyOfRange(arr, begin, end);
+        return Arrays.copyOfRange(arr, b, e);
 /*
         int length = end - begin;
         @SuppressWarnings("unchecked")

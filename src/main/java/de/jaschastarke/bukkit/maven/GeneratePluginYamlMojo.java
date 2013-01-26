@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -88,7 +89,25 @@ import de.jaschastarke.utils.ClassHelper;
  * @requiresDependencyResolution compile
  */
 public class GeneratePluginYamlMojo extends AbstractExecMojo {
-
+    private static final int FILE_WIDTH = 80;
+    
+    private enum Settings {
+        DEFAULT("default"),
+        DESCRIPTION("description"),
+        PERMISSION("permission"),
+        PERMISSION_MESSAGE("permission-message"),
+        USAGE("usage"),
+        ALIAS("alias");
+        
+        private String value;
+        Settings(final String t) {
+            value = t;
+        }
+        public String toString() {
+            return value;
+        }
+    }
+    
     /**
      * @parameter default-value="${project.version}"
      */
@@ -133,13 +152,13 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
      * @parameter default-value="${project.build.outputDirectory}/META-INF"
      * @required 
      */
-    private String meta_directory;
+    private String metaDirectory;
     
     /**
      * @parameter default-value="${project.build.outputDirectory}"
      * @required 
      */
-    private String target_directory;
+    private String targetDirectory;
 
     private ClassDescriptorStorage cds;
     
@@ -151,7 +170,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            cds = ClassDescriptorStorage.load(new File(this.meta_directory + "/descriptions.jos"));
+            cds = ClassDescriptorStorage.load(new File(this.metaDirectory + "/descriptions.jos"));
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to load class doccomments", e);
         }
@@ -192,7 +211,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         }
         
         DumperOptions options = new DumperOptions();
-        options.setWidth(80);
+        options.setWidth(FILE_WIDTH);
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(options);
         StringWriter writer = new StringWriter();
@@ -200,7 +219,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         
         //getLog().info(writer.toString());
         try {
-            FileWriter fw = new FileWriter(new File(this.target_directory + "/plugin.yml"));
+            FileWriter fw = new FileWriter(new File(this.targetDirectory + "/plugin.yml"));
             fw.write(writer.toString());
             fw.close();
         } catch (IOException e) {
@@ -217,34 +236,32 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                 try {
                     pobj = ClassHelper.getInstance(cls, loader);
                 } catch (SecurityException e) {
-                    e.printStackTrace();
-                    throw new MojoFailureException("registeredCommand class not found: " + cls);
+                    throw new MojoFailureException("SE: registeredCommand class not found: " + cls);
                 } catch (NoSuchFieldException e) {
-                    e.printStackTrace();
-                    throw new MojoFailureException("registeredCommand class not found: " + cls);
+                    throw new MojoFailureException("NSFE: registeredCommand class not found: " + cls);
                 } catch (IllegalArgumentException e) {
-                    throw new MojoFailureException("registeredCommand class could not be instanciated: " + cls);
+                    throw new MojoFailureException("IAE: registeredCommand class could not be instanciated: " + cls);
                 } catch (InvocationTargetException e) {
-                    throw new MojoFailureException("registeredCommand class could not be instanciated: " + cls);
+                    throw new MojoFailureException("ITE: registeredCommand class could not be instanciated: " + cls);
                 }
                 
                 if (pobj instanceof ICommand) {
                     ClassDescription cd = cds.getClassFor(pobj);
                     DocComment comment = cd.getDocComment();
                     Map<String, Object> command = new LinkedHashMap<String, Object>();
-                    String usage = comment.getAnnotationValue("usage");
-                    String permission = comment.getAnnotationValue("permission");
+                    String usage = comment.getAnnotationValue(Settings.USAGE.toString());
+                    String permission = comment.getAnnotationValue(Settings.PERMISSION.toString());
                     String permissionMessage = comment.getAnnotationValue("permissionMessage");
                     
-                    command.put("description", comment.getDescription());
+                    command.put(Settings.DESCRIPTION.toString(), comment.getDescription());
                     if (usage != null)
-                        command.put("usage", usage);
-                    command.put("aliases", ((ICommand) pobj).getAliases());
+                        command.put(Settings.USAGE.toString(), usage);
+                    command.put(Settings.ALIAS.toString(), ((ICommand) pobj).getAliases());
                     
                     if (permission != null)
-                        command.put("permission", permission);
+                        command.put(Settings.PERMISSION.toString(), permission);
                     if (permissionMessage != null)
-                        command.put("permission-message", permissionMessage);
+                        command.put(Settings.PERMISSION_MESSAGE.toString(), permissionMessage);
                     list.put(((ICommand) pobj).getName(), command);
                 }
             } catch (ClassNotFoundException e) {
@@ -269,18 +286,18 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                     pobj = ClassHelper.getInstance(cls, loader);
                 } catch (SecurityException e) {
                     e.printStackTrace();
-                    throw new MojoFailureException("registeredPermission class not found: " + cls);
+                    throw new MojoFailureException("SE: registeredPermission class not found: " + cls);
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();
-                    throw new MojoFailureException("registeredPermission class not found: " + cls);
+                    throw new MojoFailureException("NSFE: registeredPermission class not found: " + cls);
                 } catch (IllegalArgumentException e) {
-                    throw new MojoFailureException("registeredPermission class could not be instanciated: " + cls);
+                    throw new MojoFailureException("IAE: registeredPermission class could not be instanciated: " + cls);
                 } catch (InvocationTargetException e) {
-                    throw new MojoFailureException("registeredPermission class could not be instanciated: " + cls);
+                    throw new MojoFailureException("ITE: registeredPermission class could not be instanciated: " + cls);
                 }
 
                 if (pobj instanceof IPermission) {
-                    getLog().debug("Registered Permission is IPermission "+((IAbstractPermission) pobj).getFullString()+" <"+pobj.getClass().getName()+">");
+                    debug("Registered Permission is IPermission {0} <{1}>", ((IAbstractPermission) pobj).getFullString(), pobj.getClass().getName());
                     DocComment comment = cds.getClassFor(pobj).getDocComment();
                     if (comment == null)
                         addPermissionToList(list, (IPermission) pobj);
@@ -288,7 +305,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                         addPermissionToList(list, (IPermission) pobj, comment.getDescription());
                 }
                 if (pobj instanceof IContainer) {
-                    getLog().debug("Registered Permission is IContainer "+pobj.getClass().getName());
+                    debug("Registered Permission is IContainer {0}", pobj.getClass().getName());
                     addPermissionsToList(list, (IContainer) pobj);
                 }
             } catch (ClassNotFoundException e) {
@@ -302,9 +319,9 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         
         return list;
     }
-    private void addPermissionsToList(Map<String, Object> list, IContainer perms) {
+    private void addPermissionsToList(final Map<String, Object> list, final IContainer perms) {
         for (IPermission perm : perms.getPermissions()) {
-            getLog().debug("  Has PermissionChild: "+perm.getFullString()+" <"+perm.getClass().getName()+">");
+            debug("  Has PermissionChild: {0} <{1}>", perm.getFullString(), perm.getClass().getName());
             DocComment dc = getContainerPropertyDoc(perms, perm);
             if (dc != null) {
                 addPermissionToList(list, perm, dc.getDescription());
@@ -313,7 +330,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
             }
         }
     }
-    private void addPermissionToList(Map<String, Object> list, IPermission perm) {
+    private void addPermissionToList(final Map<String, Object> list, final IPermission perm) {
         if (perm instanceof Enum) {
             DocComment dc = getEnumPropertyDoc((Enum<?>) perm);
             if (dc != null) {
@@ -325,7 +342,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
             addPermissionToList(list, perm, null);
         }
     }
-    private DocComment getContainerPropertyDoc(IContainer set, IPermission perm) {
+    private DocComment getContainerPropertyDoc(final IContainer set, final IPermission perm) {
         ClassDescription cd = cds.getClassFor(set);
         Class<?> cls = set.getClass();
         for (Field field : cls.getFields()) {
@@ -345,7 +362,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         }
         return null;
     }
-    private DocComment getEnumPropertyDoc(Enum<?> set) {
+    private DocComment getEnumPropertyDoc(final Enum<?> set) {
         ClassDescription cd = cds.getClassFor(set);
         Class<?> cls = set.getClass();
         for (Field field : cls.getFields()) {
@@ -361,31 +378,35 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         }
         return null;
     }
-    private void addPermissionToList(Map<String, Object> list, IPermission perm, String description) {
-        getLog().debug("   Describe IPermission "+perm.getFullString());
+    private void addPermissionToList(final Map<String, Object> list, final IPermission perm, final String description) {
+        debug("   Describe IPermission {0}", perm.getFullString());
         Map<String, Object> data = new LinkedHashMap<String, Object>();
         if (perm.getDefault() == PermissionDefault.TRUE) {
-            data.put("default", true);
+            data.put(Settings.DEFAULT.toString(), true);
         } else if (perm.getDefault() == PermissionDefault.FALSE) {
-            data.put("default", false);
+            data.put(Settings.DEFAULT.toString(), false);
         } else {
-            data.put("default", perm.getDefault().toString());
+            data.put(Settings.DEFAULT.toString(), perm.getDefault().toString());
         }
         if (perm instanceof IHasDescription) {
-            data.put("description", ((IHasDescription) perm).getDescription());
+            data.put(Settings.DESCRIPTION.toString(), ((IHasDescription) perm).getDescription());
         } else if (description != null) {
-            data.put("description", description);
+            data.put(Settings.DESCRIPTION.toString(), description);
         }
         if (perm instanceof IChildPermissionContainer) {
-            getLog().debug("   Is IChildPermissionContainer");
+            debug("   Is IChildPermissionContainer");
             Map<String, Boolean> clist = new LinkedHashMap<String, Boolean>();
             for (Map.Entry<IPermission, Boolean> child : ((IChildPermissionContainer) perm).getChilds().entrySet()) {
-                getLog().debug("     "+child);
+                debug("     " + child);
                 clist.put(child.getKey().getFullString(), child.getValue());
             }
             if (clist.size() > 0)
                 data.put("children", clist);
         }
         list.put(perm.getFullString(), data);
+    }
+    
+    private void debug(final String msg, final Object... objects) {
+        debug(MessageFormat.format(msg, objects));
     }
 }

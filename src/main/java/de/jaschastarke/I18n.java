@@ -8,22 +8,22 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.IncompleteArgumentException;
 
-public class i18n {
+public class I18n {
     protected ResourceBundle bundle;
-    public i18n(String bundleName, Locale locale) {
+    public I18n(final String bundleName, final Locale locale) {
         useBundle(bundleName, locale);
     }
-    public i18n(String bundleName) {
+    public I18n(final String bundleName) {
         useBundle(bundleName, null);
     }
-    public i18n(Locale locale) {
+    public I18n(final Locale locale) {
         useBundle(null, locale);
     }
-    public i18n() {
+    public I18n() {
         useBundle(null, null);
     }
     
-    protected void useBundle(String bundleName, Locale locale) {
+    protected void useBundle(final String bundleName, final Locale locale) {
         bundle = new MultipleResourceBundle(locale, new String[]{"de.jaschastarke.bukkit.messages", bundleName});
     }
     
@@ -31,19 +31,23 @@ public class i18n {
         return bundle;
     }
     
-    public String trans(String msg, Object... objects) {
-        msg = bundle.getString(msg);
+    public String trans(final LocaleString msg) {
+        return msg.translate(this);
+    }
+    public String trans(final String msg, final Object... objects) {
+        String str = bundle.getString(msg);
         if (objects.length > 0)
-            msg = MessageFormat.format(msg, objects);
-        return msg;
+            str = MessageFormat.format(str, objects);
+        return str;
     }
     
-    public static Locale getLocaleFromString(String locale) {
+    private static final int RIDX_MOD = 3;
+    public static Locale getLocaleFromString(final String locale) {
         Matcher match = Pattern.compile("^([a-z]+)(?:[-_]([A-Za-z]+)(?:[-_](.*))?)?$").matcher(locale);
         if (!match.matches())
-            throw new IncompleteArgumentException("Locale-String could not be interpreted: "+locale);
-        if (match.group(3) != null)
-            return new Locale(match.group(1), match.group(2), match.group(3));
+            throw new IncompleteArgumentException("Locale-String could not be interpreted: " + locale);
+        if (match.group(RIDX_MOD) != null)
+            return new Locale(match.group(1), match.group(2), match.group(RIDX_MOD));
         else if (match.group(2) != null)
             return new Locale(match.group(1), match.group(2));
         else

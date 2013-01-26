@@ -3,12 +3,16 @@ package de.jaschastarke.bukkit.lib.items;
 import org.bukkit.Material;
 import org.bukkit.material.MaterialData;
 
-public class Utils {
-    public static MaterialData parseMaterial(String m) throws MaterialNotRecognizedException, MaterialDataNotRecognizedException {
+public final class Utils {
+    private Utils() {
+    }
+    private static final String MATERIAL_DATA_SEP = ":";
+    public static MaterialData parseMaterial(final String m) throws MaterialNotRecognizedException, MaterialDataNotRecognizedException {
+        String material = m;
         int d = -1;
-        if (m.contains(":")) {
-            String[] t = m.split(":");
-            m = t[0];
+        if (material.contains(MATERIAL_DATA_SEP)) {
+            String[] t = material.split(MATERIAL_DATA_SEP);
+            material = t[0];
             try {
                 d = Integer.parseInt(t[1]);
             } catch (NumberFormatException ex) {
@@ -19,9 +23,9 @@ public class Utils {
         }
         Material e = null;
         try {
-            e = Material.getMaterial(Integer.parseInt(m));
+            e = Material.getMaterial(Integer.parseInt(material));
         } catch (NumberFormatException ex) {
-            e = Material.matchMaterial(m);
+            e = Material.matchMaterial(material);
         }
         if (e == null)
             throw new MaterialNotRecognizedException();

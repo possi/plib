@@ -4,17 +4,17 @@ public abstract class AbstractHooker<T> implements IHooker<T> {
     protected HookList<T> hooks = new HookList<T>();
     
     @Override
-    public void register(T hook) {
+    public void register(final T hook) {
         hooks.register(hook);
     }
 
     @Override
-    public void register(T hook, Priority priority) {
+    public void register(final T hook, final Priority priority) {
         hooks.register(hook, priority);
     }
 
     @Override
-    public void unregister(T hook) {
+    public void unregister(final T hook) {
         hooks.unregister(hook);
     }
 

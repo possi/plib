@@ -10,10 +10,10 @@ public class HookList<T> implements Iterable<T> {
     public static class Entry<E> {
         protected Priority priority = Priority.DEFAULT;
         protected E obj;
-        public Entry(E object) {
+        public Entry(final E object) {
             this.obj = object;
         }
-        public Entry(E object, Priority priority) {
+        public Entry(final E object, final Priority priority) {
             this.obj = object;
             this.priority = priority;
         }
@@ -25,14 +25,14 @@ public class HookList<T> implements Iterable<T> {
         }
     }
     private static Comparator<Entry<?>> sorter = new Comparator<Entry<?>>() {
-        public int compare(Entry<?> o1, Entry<?> o2) {
+        public int compare(final Entry<?> o1, final Entry<?> o2) {
             return new Integer(o1.getPriority().getValue()).compareTo(o2.getPriority().getValue());
         }
     };
     
     public class CustomIterator implements Iterator<T> {
         protected Iterator<Entry<T>> it;
-        public CustomIterator(Iterator<Entry<T>> parentIterator) {
+        public CustomIterator(final Iterator<Entry<T>> parentIterator) {
             it = parentIterator;
         }
         @Override
@@ -52,16 +52,16 @@ public class HookList<T> implements Iterable<T> {
     
     List<Entry<T>> hooks = new ArrayList<Entry<T>>();
     
-    public void register(T hook) {
+    public void register(final T hook) {
         hooks.add(new Entry<T>(hook));
         this.sort();
     }
-    public void register(T hook, Priority priority) {
+    public void register(final T hook, final Priority priority) {
         hooks.add(new Entry<T>(hook, priority));
         this.sort();
     }
-    public void unregister(T hook) {
-        Iterator<Entry<T>> iterator = hooks.iterator();;
+    public void unregister(final T hook) {
+        Iterator<Entry<T>> iterator = hooks.iterator();
         while (iterator.hasNext()) {
             if (iterator.next().getValue() == hook) {
                 iterator.remove();

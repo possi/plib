@@ -5,8 +5,8 @@ public class MissingPermissionException extends Exception {
     
     private IAbstractPermission perm;
     
-    public MissingPermissionException(IAbstractPermission permission) {
-        super("Missing permission: "+permission.getFullString());
+    public MissingPermissionException(final IAbstractPermission permission) {
+        super("Missing permission: " + permission.getFullString());
     }
     public IAbstractPermission getPermission() {
         return perm;

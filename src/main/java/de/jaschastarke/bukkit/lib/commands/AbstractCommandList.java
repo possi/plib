@@ -10,10 +10,10 @@ public abstract class AbstractCommandList implements ICommandListing {
         handler.registerCommands(Arrays.asList((ICommand[]) MethodCommand.getMethodCommandsFor(this)));
     }
     
-    public void registerCommand(ICommand command) {
+    public void registerCommand(final ICommand command) {
         handler.registerCommand(command);
     }
-    public void removeCommand(ICommand command) {
+    public void removeCommand(final ICommand command) {
         handler.removeCommand(command);
     }
     public List<ICommand> getCommandList() {

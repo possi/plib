@@ -26,7 +26,7 @@ import org.apache.maven.project.MavenProject;
  * @author Jascha
  *
  */
-abstract public class AbstractExecMojo extends AbstractMojo {
+public abstract class AbstractExecMojo extends AbstractMojo {
     /**
      * Defines the scope of the classpath passed to the plugin. Set to compile,test,runtime or system depending on your
      * needs. Since 1.1.2, the default value is 'runtime' instead of 'compile'.
@@ -51,20 +51,20 @@ abstract public class AbstractExecMojo extends AbstractMojo {
      * @param artifacts the list where to collect the scope specific artifacts
      * @param theClasspathFiles the list where to collect the scope specific output directories
      */
-    @SuppressWarnings( "unchecked" )
-    protected void collectProjectArtifactsAndClasspath(List<Artifact> artifacts, List<File> theClasspathFiles) {
+    @SuppressWarnings("unchecked")
+    protected void collectProjectArtifactsAndClasspath(final List<Artifact> artifacts, final List<File> theClasspathFiles) {
         if ("compile".equals(classpathScope)) {
             artifacts.addAll(project.getCompileArtifacts());
             theClasspathFiles.add(new File(project.getBuild().getOutputDirectory()));
-        } else if ("test".equals( classpathScope)) {
-            artifacts.addAll( project.getTestArtifacts() );
+        } else if ("test".equals(classpathScope)) {
+            artifacts.addAll(project.getTestArtifacts());
             theClasspathFiles.add(new File(project.getBuild().getTestOutputDirectory()));
             theClasspathFiles.add(new File(project.getBuild().getOutputDirectory()));
         } else if ("runtime".equals(classpathScope)) {
-            artifacts.addAll( project.getRuntimeArtifacts() );
+            artifacts.addAll(project.getRuntimeArtifacts());
             theClasspathFiles.add(new File(project.getBuild().getOutputDirectory()));
         } else if ("system".equals(classpathScope)) {
-            artifacts.addAll( project.getSystemArtifacts() );
+            artifacts.addAll(project.getSystemArtifacts());
         } else {
             throw new IllegalStateException("Invalid classpath scope: " + classpathScope);
         }
@@ -136,7 +136,7 @@ abstract public class AbstractExecMojo extends AbstractMojo {
      * @param path classpath of {@link java.net.URL} objects
      * @throws MojoExecutionException if a problem happens
      */
-    protected void addRelevantProjectDependenciesToClasspath(List<URL> path)
+    protected void addRelevantProjectDependenciesToClasspath(final List<URL> path)
         throws MojoExecutionException {
         //if (this.includeProjectDependencies) {
             try {
@@ -154,8 +154,8 @@ abstract public class AbstractExecMojo extends AbstractMojo {
                 }
 
                 for (Artifact classPathElement : artifacts) {
-                    getLog().debug("Adding project dependency artifact: " +
-                                        classPathElement.getArtifactId() + " to classpath");
+                    getLog().debug("Adding project dependency artifact: "
+                                        + classPathElement.getArtifactId() + " to classpath");
                     path.add(classPathElement.getFile().toURI().toURL());
                 }
             } catch (MalformedURLException e) {

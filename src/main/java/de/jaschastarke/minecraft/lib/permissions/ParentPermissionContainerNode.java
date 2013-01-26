@@ -12,35 +12,35 @@ public class ParentPermissionContainerNode extends SimplePermissionContainerNode
     private IPermissionContainer container = null;
     protected PermissionDefault permDefault = PermissionDefault.FALSE;
     
-    protected ParentPermissionContainerNode(IAbstractPermission parent, String name) {
+    protected ParentPermissionContainerNode(final IAbstractPermission parent, final String name) {
         super(parent, name);
     }
-    protected ParentPermissionContainerNode(IAbstractPermission parent, String name, PermissionDefault def) {
+    protected ParentPermissionContainerNode(final IAbstractPermission parent, final String name, final PermissionDefault def) {
         super(parent, name);
         permDefault = def;
     }
-    protected ParentPermissionContainerNode(IAbstractPermission parent, String name, IPermissionContainer childcontainer) {
+    protected ParentPermissionContainerNode(final IAbstractPermission parent, final String name, final IPermissionContainer childcontainer) {
         super(parent, name);
         container = childcontainer;
     }
-    protected ParentPermissionContainerNode(IAbstractPermission parent, String name, PermissionDefault def, IPermissionContainer childcontainer) {
+    protected ParentPermissionContainerNode(final IAbstractPermission parent, final String name, final PermissionDefault def, final IPermissionContainer childcontainer) {
         super(parent, name);
         permDefault = def;
         container = childcontainer;
     }
     private void buildChildList() {
-        IPermissionContainer container = this.container != null ? this.container : this;
+        IPermissionContainer cont = this.container != null ? this.container : this;
         Map<IPermission, Boolean> list = new HashMap<IPermission, Boolean>();
-        for (Field field : container.getClass().getFields()) {
+        for (Field field : cont.getClass().getFields()) {
             if (Modifier.isStatic(field.getModifiers())) {
                 IsChildPermission ischild = field.getAnnotation(IsChildPermission.class);
                 if (ischild != null) {
                     if (!IPermission.class.isAssignableFrom(field.getType()))
-                        throw new IllegalArgumentException("A field that represents a child permission, has to implement interface IPermission: "+container.getClass().getName()+"."+field.getName());
+                        throw new IllegalArgumentException("A field that represents a child permission, has to implement interface IPermission: " + cont.getClass().getName() + IAbstractPermission.SEP + field.getName());
                     try {
-                        IPermission perm = (IPermission) field.get(container);
+                        IPermission perm = (IPermission) field.get(cont);
                         if (perm == null)
-                            throw new IllegalArgumentException("The static field "+container.getClass().getName()+"."+field.getName()+" is null");
+                            throw new IllegalArgumentException("The static field " + cont.getClass().getName() + "." + field.getName() + " is null");
                         if (perm instanceof IPermissionChild)
                             ((IPermissionChild) perm).addParentPermission(this);
                         list.put(perm, ischild.value());

@@ -1,15 +1,13 @@
 package de.jaschastarke.bukkit.lib.chat;
 
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 
-import de.jaschastarke.i18n;
-import de.jaschastarke.bukkit.lib.commands.CommandContext;
+import de.jaschastarke.LocaleString;
+import de.jaschastarke.I18n;
 
 public abstract class AbstractFormatter implements IFormatter {
-    //private static Pattern CODES = Pattern.compile("§[0-9a-fklmnor]", Pattern.CASE_INSENSITIVE);
-    protected i18n lang;
-    public AbstractFormatter(i18n lang) {
+    protected I18n lang;
+    public AbstractFormatter(final I18n lang) {
         this.lang = lang;
     }
 
@@ -17,48 +15,32 @@ public abstract class AbstractFormatter implements IFormatter {
     public Integer getLineLimit() {
         return null;
     }
-
-    @Override
-    public String getString(String msg, Object... params) {
-        return lang == null ? msg : lang.trans(msg, params);
-    }
-
-    @Override
-    public String formatPlayerName(OfflinePlayer player) {
-        return formatPlayerName(player.getName());
-    }
-    @Override
-    public String formatPlayerExample(CommandContext context, String defaultName) {
-        return formatPlayerName(context.isPlayer() ? context.getPlayer().getName() : defaultName);
-    }
-    public String formatPlayerName(String player) {
-        return ChatColor.BLUE + player + ChatColor.RESET;
-    }
-
-    @Override
-    public String formatRequiredArgument(String name) {
-        return new StringBuilder().append(ChatColor.DARK_RED).append("<").append(name).append(">").append(ChatColor.RESET).toString();
-    }
-
-    @Override
-    public String formatOptionalArgument(String name) {
-        return new StringBuilder().append(ChatColor.GRAY).append("[").append(name).append("]").append(ChatColor.RESET).toString(); 
-    }
-
-    @Override
-    public String formatParameter(String param) {
-        return new StringBuilder().append(ChatColor.DARK_GRAY).append(param).append(ChatColor.RESET).toString();
-    }
-
     @Override
     public Integer getLineLengthLimit() {
         return null;
     }
+
+    @Override
+    public String getString(final LocaleString msg) {
+        if (!msg.isTranslated())
+            msg.translate(lang);
+        return msg.toString();
+    }
+    @Override
+    public String getString(final String msg, final Object... params) {
+        return lang == null ? msg.toString() : lang.trans(msg, params);
+    }
+    @Override
+    public String formatString(final IChatFormatting formating, final CharSequence msg) {
+        if (msg instanceof LocaleString && lang != null)
+            ((LocaleString) msg).translate(lang);
+        return formating.format(msg.toString());
+    }
     
-    public int countChars(String str) {
+    public int countChars(final String str) {
         return removeFormatting(str).length();
     }
-    public String removeFormatting(String str) {
+    public String removeFormatting(final String str) {
         return ChatColor.stripColor(str);
     }
 }

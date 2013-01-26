@@ -4,11 +4,11 @@ public class SimplePermissionContainerNode extends SimplePermissionContainer imp
     private IAbstractPermission parent = null;
     private String name = null;
 
-    protected SimplePermissionContainerNode(IAbstractPermission parent, String name) {
+    protected SimplePermissionContainerNode(final IAbstractPermission parent, final String name) {
         this.parent = parent;
         this.name = name;
     }
-    protected SimplePermissionContainerNode(String name) {
+    protected SimplePermissionContainerNode(final String name) {
         this.name = name;
     }
     
