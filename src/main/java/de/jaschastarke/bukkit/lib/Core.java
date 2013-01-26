@@ -12,7 +12,6 @@ import de.jaschastarke.modularize.ModuleEntry;
 import de.jaschastarke.modularize.ModuleManager;
 
 public class Core extends JavaPlugin implements PluginCore, IHasModules {
-    public boolean debug = false;
     protected boolean initialized = false;
     protected EventHandlerList listeners = new EventHandlerList(this);
     protected BukkitCommandHandler commands = new BukkitCommandHandler(this);
@@ -22,7 +21,7 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
     private PluginLogger log;
     
     public boolean isDebug() {
-        return debug;
+        return false;
     }
     
     public void onInitialize() {

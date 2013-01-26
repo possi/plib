@@ -52,6 +52,10 @@ public class MethodConfigurationNode implements IConfigurationNode {
         return annot != null ? annot.order() : 0;
     }
     @Override
+    public boolean isReadOnly() {
+        return annot != null ? annot.readonly() : false;
+    }
+    @Override
     public String getName() {
         return name;
     }

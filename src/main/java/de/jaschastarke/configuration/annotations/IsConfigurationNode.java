@@ -19,4 +19,5 @@ public @interface IsConfigurationNode {
      */
     String name() default "";
     int order() default 0;
+    boolean readonly() default false;
 }

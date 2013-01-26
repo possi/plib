@@ -26,4 +26,10 @@ public final class ArrayUtil {
         System.arraycopy(arr, begin, newArgs, 0, length);
         return newArgs;*/
     }
+    
+    public static <T> T[] push(final T[] arr, final T appendum) {
+        T[] n = Arrays.copyOfRange(arr, 0, arr.length + 1);
+        n[arr.length] = appendum;
+        return n;
+    }
 }

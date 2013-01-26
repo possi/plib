@@ -24,4 +24,8 @@ public class SimpleConfigurationNode implements IConfigurationNode {
     public String getDescription() {
         return null;
     }
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
 }

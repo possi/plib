@@ -14,7 +14,7 @@ import static de.jaschastarke.bukkit.lib.chat.IFormatter.NEWLINE;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 
 public class HelpCommand implements ICommand, ICommandListHelp {
-    private static final Pattern USAGE_PARSE = Pattern.compile("\\B(?:(\\-\\w)|\\[([\\w\\.\\-]+)\\]|<([\\w+\\.\\-])>)\\B");
+    private static final Pattern USAGE_PARSE = Pattern.compile("\\B(?:(\\-\\w)|\\[([\\w\\.\\-]+)\\]|<([\\w+\\.\\-]+)>)\\B");
     private static final int USAGE_IDX_PARAM = 1;
     private static final int USAGE_IDX_OPTIONAL = 2;
     private static final int USAGE_IDX_REQUIRED = 3;
@@ -66,7 +66,7 @@ public class HelpCommand implements ICommand, ICommandListHelp {
             return displayDescribedHelpCommand(context, (IHelpDescribed) mainCommand);
         IFormatter formatter = context.getFormatter();
         
-        StringBuilder text = new StringBuilder("/");
+        StringBuilder text = new StringBuilder(ICommand.PREFIX);
         for (Entry<ICommand, String> handledcommand : context.getCommandChain().entrySet()) {
             text.append(handledcommand.getValue());
             text.append(SPACE);
@@ -103,7 +103,7 @@ public class HelpCommand implements ICommand, ICommandListHelp {
             desc.append(formatter.formatString(ChatFormattings.LABEL, formatter.getString("bukkit.help.syntax")));
         }
         if (context.isPlayer()) {
-            desc.append(formatter.formatString(ChatFormattings.SLASH, "/"));
+            desc.append(formatter.formatString(ChatFormattings.SLASH, ICommand.PREFIX));
         }
         for (Map.Entry<ICommand, String> pcommand : context.getCommandChain().entrySet()) {
             if (pcommand.getKey() == command) {
@@ -184,7 +184,7 @@ public class HelpCommand implements ICommand, ICommandListHelp {
         }
         return aliases;
     }
-    protected String formatUsage(final IFormatter format, final String usage) {
+    public static String formatUsage(final IFormatter format, final String usage) {
         Matcher matcher = USAGE_PARSE.matcher(usage);
         StringBuffer replace = new StringBuffer();
         while (matcher.find()) {
