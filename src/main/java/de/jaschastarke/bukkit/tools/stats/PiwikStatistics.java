@@ -101,7 +101,7 @@ public class PiwikStatistics implements IStatistics {
         pluginname = plugin.getName();
         version = plugin.getDescription().getVersion();
         
-        plugin.getServer().getScheduler().scheduleAsyncDelayedTask(plugin, new Runnable() {
+        plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, new Runnable() {
             @Override
             public void run() {
                 // Well, we all know it isn't http, but as piwik is a website tracking, it doesn't tracks the url if it isn't a http url ;)
@@ -115,7 +115,7 @@ public class PiwikStatistics implements IStatistics {
             public void run() {
                 final int playercount = plugin.getServer().getOnlinePlayers().length;
                 if (playercount > 0) {
-                    plugin.getServer().getScheduler().scheduleAsyncDelayedTask(plugin, new Runnable() {
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
                         @Override
                         public void run() {
                             trackOnlineUsage(playercount);
