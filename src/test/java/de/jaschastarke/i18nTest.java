@@ -18,7 +18,27 @@ public class i18nTest {
     @Test
     public void testTrans() {
         assertEquals("Syntax: ", lang.trans("bukkit.help.syntax"));
-        assertEquals("Test-Exampe", lang.trans("test.example"));
+        assertEquals("Test-Example", lang.trans("test.example"));
+    }
+
+    @Test
+    public void testLocaleString() {
+        LocaleString s1 = new LocaleString("bukkit.help.syntax");
+        assertEquals("Syntax: ", lang.trans(s1));
+        assertEquals("Syntax: ", s1.toString());
+        
+        LocaleString s2 = new LocaleString("test.example");
+        assertEquals("Test-Example", s2.translate(lang));
+        assertEquals("Test-Example", s2.toString());
+    }
+    
+    @Test
+    public void testPlaceholder() {
+        assertEquals("Test >Foo< Example", lang.trans("test.example.placeholder", "Foo"));
+        assertEquals("Test >Foo< Example", lang.trans("test.example.placeholder", "Foo", 123, "456"));
+        
+        LocaleString s3 = new LocaleString("test.example.placeholder", "Abc");
+        assertEquals("Test >Abc< Example", lang.trans(s3));
     }
 
     @Test

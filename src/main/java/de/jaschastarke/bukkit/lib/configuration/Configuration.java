@@ -33,11 +33,13 @@ public abstract class Configuration extends MethodConfiguration implements IChan
     @Override
     public void setValue(final IConfigurationNode node, final Object pValue) throws InvalidValueException {
         Object value = pValue;
+        if (node.isReadOnly())
+            throw new ReadOnlyException();
         if (node instanceof MethodConfigurationNode && value instanceof String) {
             String val = (String) value;
             MethodConfigurationNode mnode = (MethodConfigurationNode) node;
             Class<?> type = mnode.getMethod().getReturnType();
-            if (Boolean.class.isAssignableFrom(type)) {
+            if (Boolean.TYPE.isAssignableFrom(type)) {
                 if (val.equals("true") || val.equals("on") || val.equals("1")) {
                     value = true;
                 } else if (val.equals("false") || val.equals("off") || val.equals("0")) {
@@ -47,17 +49,17 @@ public abstract class Configuration extends MethodConfiguration implements IChan
                 }
             } else {
                 try {
-                    if (Integer.class.isAssignableFrom(type)) {
+                    if (Integer.TYPE.isAssignableFrom(type)) {
                         value = Integer.parseInt(val);
-                    } else if (Float.class.isAssignableFrom(type)) {
+                    } else if (Float.TYPE.isAssignableFrom(type)) {
                         value = Float.parseFloat(val);
-                    } else if (Double.class.isAssignableFrom(type)) {
+                    } else if (Double.TYPE.isAssignableFrom(type)) {
                         value = Double.parseDouble(val);
-                    } else if (Long.class.isAssignableFrom(type)) {
+                    } else if (Long.TYPE.isAssignableFrom(type)) {
                         value = Long.parseLong(val);
-                    } else if (Short.class.isAssignableFrom(type)) {
+                    } else if (Short.TYPE.isAssignableFrom(type)) {
                         value = Short.parseShort(val);
-                    } else if (Byte.class.isAssignableFrom(type)) {
+                    } else if (Byte.TYPE.isAssignableFrom(type)) {
                         value = Byte.parseByte(val);
                     }
                 } catch (NumberFormatException e) {

@@ -4,4 +4,5 @@ public interface IConfigurationNode {
     public String getName();
     public int getOrder();
     public String getDescription();
+    public boolean isReadOnly();
 }

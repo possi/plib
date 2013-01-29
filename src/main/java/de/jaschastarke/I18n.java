@@ -31,14 +31,18 @@ public class I18n {
         return bundle;
     }
     
-    public String trans(final LocaleString msg) {
-        return msg.translate(this);
-    }
-    public String trans(final String msg, final Object... objects) {
+    private String translate(final String msg, final Object... objects) {
         String str = bundle.getString(msg);
         if (objects.length > 0)
             str = MessageFormat.format(str, objects);
         return str;
+    }
+
+    public String trans(final CharSequence msg) {
+        return msg instanceof LocaleString ? ((LocaleString) msg).translate(this) : translate(msg.toString(), new Object[0]);
+    }
+    public String trans(final String msg, final Object... objects) {
+        return translate(msg, objects);
     }
     
     private static final int RIDX_MOD = 3;

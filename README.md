@@ -15,6 +15,7 @@ Possis Code-Conventions
 -----------------------
 - 4 Spaces, no Tabs.
 - Opening braces in same line
+- Max. line length of 120 chars is explicit optional! (Don't come up with breaking at 80 chars, that doesn't help anyone!)
 
 CheckStyle configuration: https://dl.dropbox.com/u/5023975/coding/checkstyle.xml
 

@@ -97,7 +97,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         PERMISSION("permission"),
         PERMISSION_MESSAGE("permission-message"),
         USAGE("usage"),
-        ALIAS("alias");
+        ALIASES("aliases");
         
         private String value;
         Settings(final String t) {
@@ -256,7 +256,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                     command.put(Settings.DESCRIPTION.toString(), comment.getDescription());
                     if (usage != null)
                         command.put(Settings.USAGE.toString(), usage);
-                    command.put(Settings.ALIAS.toString(), ((ICommand) pobj).getAliases());
+                    command.put(Settings.ALIASES.toString(), ((ICommand) pobj).getAliases());
                     
                     if (permission != null)
                         command.put(Settings.PERMISSION.toString(), permission);
@@ -407,6 +407,6 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
     }
     
     private void debug(final String msg, final Object... objects) {
-        debug(MessageFormat.format(msg, objects));
+        getLog().debug(MessageFormat.format(msg, objects));
     }
 }

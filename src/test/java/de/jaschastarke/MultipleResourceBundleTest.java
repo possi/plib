@@ -21,7 +21,7 @@ public class MultipleResourceBundleTest {
     @Test
     public void test() {
         assertEquals("Syntax: ", multi.getString("bukkit.help.syntax"));
-        assertEquals("Test-Exampe", multi.getString("test.example"));
+        assertEquals("Test-Example", multi.getString("test.example"));
     }
 
 }
