@@ -5,7 +5,10 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.Stack;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -26,6 +29,7 @@ import org.json.simple.JSONObject;
 public class PiwikStatistics implements IStatistics {
     private static final int TICKS_PER_SECOND = 20;
     private static final long DEFAULT_WAIT = 6000L; // 6000 ticks or 300 seconds or 5 minutes
+    private static final int MAX_CVAR_SIZE = 200;
     private static final int APIV = 1;
     private URL apiUrl;
     private int idSite;
@@ -35,6 +39,7 @@ public class PiwikStatistics implements IStatistics {
     private String server;
     private String serverid = getUniqueID();
     private String servername;
+    private String servermotd;
     private long wait = DEFAULT_WAIT;
     
     private static final String PIWIK_FIELD_CVAR = "cvar";
@@ -107,6 +112,7 @@ public class PiwikStatistics implements IStatistics {
                 // Well, we all know it isn't http, but as piwik is a website tracking, it doesn't tracks the url if it isn't a http url ;)
                 server = "http://" + StatsUtils.getIP(plugin.getServer()) + ":" + plugin.getServer().getPort();
                 servername = ChatColor.stripColor(plugin.getServer().getServerName().replace(SEPERATOR, "-"));
+                servermotd = ChatColor.stripColor(plugin.getServer().getMotd().replace(SEPERATOR, "-").replaceAll("\\s+", " "));
                 trackEnable();
             }
         }, wait);
@@ -128,30 +134,44 @@ public class PiwikStatistics implements IStatistics {
     
     private void trackEnable() {
         Plugin[] pluginlist = plugin.getServer().getPluginManager().getPlugins();
-        String plugins = "";
-        for (int i = 0; i < pluginlist.length; i++) {
-            if (i > 0)
-                plugins += ",";
-            plugins += pluginlist[i].getName();
+        List<String[]> cdata = new ArrayList<String[]>();
+        cdata.add(new String[]{"Server-Name", servername});
+        cdata.add(new String[]{"Server-Version", (plugin.getServer().getName() + " " + plugin.getServer().getVersion())});
+        cdata.add(new String[]{"Plugin-Version", pluginname + " " + version});
+        
+        Stack<StringBuilder> plugins = new Stack<StringBuilder>();
+        plugins.add(new StringBuilder(""));
+        
+        for (Plugin cplugin : pluginlist) {
+            StringBuilder currentPlugins = plugins.lastElement();
+            if ((currentPlugins.length() + cplugin.getName().length() + 1) > MAX_CVAR_SIZE) {
+                plugins.add(new StringBuilder());
+                currentPlugins = plugins.lastElement();
+            }
+            if (currentPlugins.length() > 0)
+                currentPlugins.append(",");
+            currentPlugins.append(cplugin.getName());
         }
-        JSONObject cvar = getCVar(new String[][]{
-            {"Server-Version", (plugin.getServer().getName() + " " + plugin.getServer().getVersion())},
-            {"Plugin-Version", pluginname + " " + version},
-            {"Plugins", plugins},
-            {"Mode", plugin.getServer().getOnlineMode() ? "Online" : "Offline"}
-        });
+        for (int i = 0; i < plugins.size(); i++) {
+            String plname = i == 0 ? "Plugins" : ("Plugins " + (i + 1));
+            cdata.add(new String[]{plname, plugins.get(i).toString()});
+        }
+        cdata.add(new String[]{"Mode", plugin.getServer().getOnlineMode() ? "Online" : "Offline"});
+        JSONObject cvar = getCVar(cdata.toArray(new String[cdata.size()][]));
         
         String[][] args = new String[][]{
-            {"action_name", servername},
+            {"action_name", servermotd},
             {PIWIK_FIELD_CVAR, cvar.toJSONString()}
         };
         track(server + SEPERATOR + pluginname + "/load", args);
     }
 
     private void trackOnlineUsage(final int playercount) {
-        JSONObject cvar = getCVar(new String[][]{
-                {"Online-Count", Integer.toString(playercount)}
-            });
+        List<String[]> cdata = new ArrayList<String[]>();
+        cdata.add(new String[]{"Online-Count", Integer.toString(playercount)});
+        if (!plugin.getServer().getOnlineMode())
+            cdata.add(new String[]{"Offline-Mode", "yes"});
+        JSONObject cvar = getCVar(cdata.toArray(new String[cdata.size()][]));
             
         track(server + SEPERATOR + pluginname + "/usage", new String[][]{
             {"multiple", Integer.toString(playercount)}, // handled by piwikProxy.php to create a Batch-Request to simulate multiple hits
