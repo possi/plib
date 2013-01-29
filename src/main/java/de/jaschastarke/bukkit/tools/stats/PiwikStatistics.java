@@ -106,7 +106,7 @@ public class PiwikStatistics implements IStatistics {
             public void run() {
                 // Well, we all know it isn't http, but as piwik is a website tracking, it doesn't tracks the url if it isn't a http url ;)
                 server = "http://" + StatsUtils.getIP(plugin.getServer()) + ":" + plugin.getServer().getPort();
-                servername = ChatColor.stripColor(plugin.getServer().getName().replace(SEPERATOR, "-"));
+                servername = ChatColor.stripColor(plugin.getServer().getServerName().replace(SEPERATOR, "-"));
                 trackEnable();
             }
         }, wait);
@@ -135,7 +135,7 @@ public class PiwikStatistics implements IStatistics {
             plugins += pluginlist[i].getName();
         }
         JSONObject cvar = getCVar(new String[][]{
-            {"Server-Version", plugin.getServer().getVersion()},
+            {"Server-Version", (plugin.getServer().getName() + " " + plugin.getServer().getVersion())},
             {"Plugin-Version", pluginname + " " + version},
             {"Plugins", plugins},
             {"Mode", plugin.getServer().getOnlineMode() ? "Online" : "Offline"}
