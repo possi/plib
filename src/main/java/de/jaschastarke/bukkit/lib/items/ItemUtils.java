@@ -3,10 +3,10 @@ package de.jaschastarke.bukkit.lib.items;
 import org.bukkit.Material;
 import org.bukkit.material.MaterialData;
 
-public final class Utils {
-    private Utils() {
+public final class ItemUtils {
+    private ItemUtils() {
     }
-    private static final String MATERIAL_DATA_SEP = ":";
+    public static final String MATERIAL_DATA_SEP = ":";
     public static MaterialData parseMaterial(final String m) throws MaterialNotRecognizedException, MaterialDataNotRecognizedException {
         String material = m;
         int d = -1;

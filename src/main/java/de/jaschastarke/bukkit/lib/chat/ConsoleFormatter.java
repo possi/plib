@@ -7,4 +7,8 @@ public class ConsoleFormatter extends AbstractFormatter {
         super(lang);
     }
 
+    @Override
+    public IPagination newPaginiation() {
+        return new NoPager();
+    }
 }

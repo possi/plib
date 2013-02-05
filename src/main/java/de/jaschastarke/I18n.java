@@ -2,6 +2,7 @@ package de.jaschastarke;
 
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,6 +10,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.IncompleteArgumentException;
 
 public class I18n {
+    protected boolean ignorant = false;
+    
     protected ResourceBundle bundle;
     public I18n(final String bundleName, final Locale locale) {
         useBundle(bundleName, locale);
@@ -30,12 +33,24 @@ public class I18n {
     public ResourceBundle getResourceBundle() {
         return bundle;
     }
+    public boolean isIgnorant() {
+        return ignorant;
+    }
+    public void setIgnorant(final boolean value) {
+        ignorant = value;
+    }
     
     private String translate(final String msg, final Object... objects) {
-        String str = bundle.getString(msg);
-        if (objects.length > 0)
-            str = MessageFormat.format(str, objects);
-        return str;
+        try {
+            String str = bundle.getString(msg);
+            if (objects.length > 0)
+                str = MessageFormat.format(str, objects);
+            return str;
+        } catch (MissingResourceException ex) {
+            if (ignorant)
+                return msg;
+            throw ex;
+        }
     }
 
     public String trans(final CharSequence msg) {

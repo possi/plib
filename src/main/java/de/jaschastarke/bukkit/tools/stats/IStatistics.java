@@ -7,4 +7,6 @@ public interface IStatistics {
      * @param event
      */
     public void trackEvent(String event);
+    
+    public void unregister();
 }

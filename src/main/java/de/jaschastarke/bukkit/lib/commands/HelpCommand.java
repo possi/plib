@@ -1,7 +1,6 @@
 package de.jaschastarke.bukkit.lib.commands;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,11 +9,13 @@ import org.apache.commons.lang.ArrayUtils;
 import de.jaschastarke.LocaleString;
 import de.jaschastarke.bukkit.lib.chat.ChatFormattings;
 import de.jaschastarke.bukkit.lib.chat.IFormatter;
-import static de.jaschastarke.bukkit.lib.chat.IFormatter.NEWLINE;
+import de.jaschastarke.bukkit.lib.chat.IPagination;
+import de.jaschastarke.bukkit.lib.chat.NoPager;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
+import de.jaschastarke.utils.ArrayUtil;
 
-public class HelpCommand implements ICommand, ICommandListHelp {
-    private static final Pattern USAGE_PARSE = Pattern.compile("\\B(?:(\\-\\w)|\\[([\\w\\.\\-]+)\\]|<([\\w+\\.\\-]+)>)\\B");
+public class HelpCommand implements ICommand, ICommandListHelp, IHelpDescribed {
+    private static final Pattern USAGE_PARSE = Pattern.compile("\\B(?:(\\-\\w)|\\[([\\w\\.\\-\\|]+)\\]|<([\\w+\\.\\-\\|]+)>)\\B");
     private static final int USAGE_IDX_PARAM = 1;
     private static final int USAGE_IDX_OPTIONAL = 2;
     private static final int USAGE_IDX_REQUIRED = 3;
@@ -37,93 +38,99 @@ public class HelpCommand implements ICommand, ICommandListHelp {
         return mainCommand;
     }
     @Override
-    public boolean execute(final CommandContext context, final String[] args) throws MissingPermissionCommandException, CommandException {
+    public boolean execute(final CommandContext context, final String[] cArgs) throws MissingPermissionCommandException, CommandException {
+        String[] args = cArgs;
+        IPagination page = context.getFormatter().newPaginiation();
+        if (cArgs.length > 0 && cArgs[cArgs.length - 1].equals("-n")) {
+            page = new NoPager();
+            args = ArrayUtil.getRange(cArgs, 0, -1);
+        } else if (cArgs.length > 0) {
+            try {
+                int p = Integer.parseInt(cArgs[cArgs.length - 1]);
+                page.selectPage(p);
+                args = ArrayUtil.getRange(cArgs, 0, -1);
+            } catch (NumberFormatException e) {
+                page.selectPage(0);
+            }
+        }
         if (args.length > 0) {
             for (ICommand command : mainCommand.getCommandList()) {
                 if (command.getName().equals(args[0])) {
                     if (command instanceof IHelpDescribed) {
-                        return displayDescribedHelpCommand(context, (IHelpDescribed) command);
+                        return displayDescribedHelpCommand(page, context, (IHelpDescribed) command);
                     }
                 }
             }
             for (ICommand command : mainCommand.getCommandList()) {
                 if (ArrayUtils.contains(command.getAliases(), args[0])) {
                     if (command instanceof IHelpDescribed) {
-                        return displayDescribedHelpCommand(context, (IHelpDescribed) command, args[0]);
+                        return displayDescribedHelpCommand(page, context, (IHelpDescribed) command, args[0]);
                     }
                 }
             }
         }
         if (mainCommand instanceof IHelpDescribed)
-            return displayDescribedHelpCommand(context, (IHelpDescribed) mainCommand);
-        executeCommandList(context);
-        return true;
-    }
-
-    @Deprecated
-    public boolean executeCommandList(final CommandContext context) {
-        if (mainCommand instanceof IHelpDescribed)
-            return displayDescribedHelpCommand(context, (IHelpDescribed) mainCommand);
-        IFormatter formatter = context.getFormatter();
+            return displayDescribedHelpCommand(page, context, (IHelpDescribed) mainCommand);
         
-        StringBuilder text = new StringBuilder(ICommand.PREFIX);
-        for (Entry<ICommand, String> handledcommand : context.getCommandChain().entrySet()) {
-            text.append(handledcommand.getValue());
-            text.append(SPACE);
+        return executeCommandList(context);
+    }
+    public boolean executeCommandList(final CommandContext context) {
+        return executeCommandList(context.getFormatter().newPaginiation(), context);
+    }
+    public boolean executeCommandList(final IPagination page, final CommandContext context) {
+        if (mainCommand instanceof IHelpDescribed)
+            return displayDescribedHelpCommand(page, context, (IHelpDescribed) mainCommand);
+        
+        if (mainCommand instanceof ICommandListing && ((ICommandListing) mainCommand).getCommandList().size() > 0) {
+            IPagination desc = context.getFormatter().newPaginiation();
+            for (ICommand scommand : mainCommand.getCommandList()) {
+                if (!(scommand instanceof IHelpDescribed) || checkPermisisons(context, ((IHelpDescribed) scommand).getRequiredPermissions())) {
+                    if (scommand instanceof IHelpDescribed) {
+                        for (CharSequence cusage : ((IHelpDescribed) scommand).getUsages()) {
+                            buildUsage(desc, context, scommand, cusage.toString());
+                            desc.appendln();
+                        }
+                    } else {
+                        buildUsage(desc, context, scommand, null);
+                        desc.appendln();
+                    }
+                }
+            }
+            context.response(desc.toString().trim());
+            return true;
         }
-        text.append("- ");
-        text.append(formatter.getString("bukkit.help.available_commands"));
-        text.append(NEWLINE);
-        for (ICommand command : mainCommand.getCommandList()) {
-            //text.append(" - ");
-            text.append(command.getName());
-            text.append(LIST_SEP);
-        }
-        text.replace(text.length() - 2, text.length(), "");
-        context.response(text.toString().trim());
-        return true;
+        return false;
     }
     
-    protected boolean displayDescribedHelpCommand(final CommandContext context, final IHelpDescribed command) {
-        return displayDescribedHelpCommand(context, command, null);
+    protected boolean displayDescribedHelpCommand(final IPagination desc, final CommandContext context, final IHelpDescribed command) {
+        for (Map.Entry<ICommand, String> entry : context.getCommandChain().entrySet()) {
+            if (entry.getKey() == command) {
+                return displayDescribedHelpCommand(desc, context, command, entry.getValue());
+            }
+        }
+        return displayDescribedHelpCommand(desc, context, command, null);
     }
-    protected boolean displayDescribedHelpCommand(final CommandContext context, final IHelpDescribed command, final String usedAlias) {
+    protected boolean displayDescribedHelpCommand(final IPagination desc, final CommandContext context, final IHelpDescribed command, final String usedAlias) {
         String alias = usedAlias;
         IFormatter formatter = context.getFormatter();
         
-        StringBuilder desc = new StringBuilder();
-        desc.append(formatter.formatString(ChatFormattings.TEXT_HEADER, command.getPackageName()));
-        desc.append(NEWLINE);
+        String title = (command.getPackageName() + SPACE + desc.getPageDisplay()).trim();
+        desc.appendln(formatter.formatString(ChatFormattings.TEXT_HEADER, title));
+        desc.setFixedLines(1, 0);
         
         boolean something = false;
         
-        String usage = command.getUsage().toString();
-        if (usage != null && !usage.isEmpty()) {
-            something = true;
-            desc.append(formatter.formatString(ChatFormattings.LABEL, formatter.getString("bukkit.help.syntax")));
-        }
-        if (context.isPlayer()) {
-            desc.append(formatter.formatString(ChatFormattings.SLASH, ICommand.PREFIX));
-        }
-        for (Map.Entry<ICommand, String> pcommand : context.getCommandChain().entrySet()) {
-            if (pcommand.getKey() == command) {
-                alias = pcommand.getValue();
-                break;
-            } else if (pcommand.getKey() == this) {
-                break;
+        if (command.getUsages() != null) {
+            for (CharSequence cusage : command.getUsages()) {
+                String usage = cusage.toString();
+                if (usage != null && !usage.isEmpty()) {
+                    something = true;
+                    desc.append(formatter.formatString(ChatFormattings.LABEL, formatter.getString("bukkit.help.usage")));
+                }
+                buildUsage(desc, context, command, usage, usedAlias);
+                desc.appendln();
             }
-            desc.append(formatter.formatString(ChatFormattings.USED_COMMAND, pcommand.getValue()));
-            desc.append(SPACE);
         }
-        desc.append(formatter.formatString(ChatFormattings.COMMAND, alias != null ? alias : command.getName()));
-        desc.append(SPACE);
-        if (usage != null && !usage.isEmpty()) {
-            String usagestr = formatUsage(formatter, usage);
-            if (context.isPlayer())
-                usagestr.replace("$player", context.getPlayer().getName());
-            desc.append(formatter.formatString(ChatFormattings.ARGUMENTS, usagestr));
-        }
-        desc.append(NEWLINE);
         
         String[] aliases = buildAliases(command.getAliases(), alias, command.getName());
         if (aliases != null && aliases.length > 0) {
@@ -134,7 +141,7 @@ public class HelpCommand implements ICommand, ICommandListHelp {
                     desc.append(LIST_SEP);
                 desc.append(formatter.formatString(ChatFormattings.COMMAND, aliases[i]));
             }
-            desc.append(NEWLINE);
+            desc.appendln();
         }
         
         CharSequence description = command.getDescription();
@@ -145,13 +152,12 @@ public class HelpCommand implements ICommand, ICommandListHelp {
             else
                 d = description.toString();
             something = true;
-            desc.append(formatter.formatString(ChatFormattings.DESCRIPTION, d.trim()));
-            desc.append(NEWLINE);
+            desc.appendln(formatter.formatString(ChatFormattings.DESCRIPTION, d.trim()));
         }
         
         if (command instanceof ICommandListing && ((ICommandListing) command).getCommandList().size() > 0) {
             something = true;
-            desc.append(formatter.formatString(ChatFormattings.LABEL, formatter.getString("bukkit.help.available_sub_commands")));
+            /*desc.append(formatter.formatString(ChatFormattings.LABEL, formatter.getString("bukkit.help.available_sub_commands")));
             for (ICommand scommand : mainCommand.getCommandList()) {
                 if (!(scommand instanceof IHelpDescribed) || checkPermisisons(context, ((IHelpDescribed) scommand).getRequiredPermissions())) {
                     desc.append(formatter.formatString(ChatFormattings.REQUIRED_ARGUMENT, scommand.getName()));
@@ -159,7 +165,21 @@ public class HelpCommand implements ICommand, ICommandListHelp {
                 }
             }
             desc.replace(desc.length() - 2, desc.length(), ""); // remove latest LIST_SEP
-            desc.append(NEWLINE);
+            desc.append(NEWLINE);*/
+            
+            for (ICommand scommand : mainCommand.getCommandList()) {
+                if (!(scommand instanceof IHelpDescribed) || checkPermisisons(context, ((IHelpDescribed) scommand).getRequiredPermissions())) {
+                    if (scommand instanceof IHelpDescribed) {
+                        for (CharSequence cusage : ((IHelpDescribed) scommand).getUsages()) {
+                            buildUsage(desc, context, scommand, cusage.toString());
+                            desc.appendln();
+                        }
+                    } else {
+                        buildUsage(desc, context, scommand, null);
+                        desc.appendln();
+                    }
+                }
+            }
         }
         
         if (something) {
@@ -200,6 +220,35 @@ public class HelpCommand implements ICommand, ICommandListHelp {
         return replace.toString();
     }
     
+    protected void buildUsage(final IPagination desc, final CommandContext context, final ICommand command, final String usage) {
+        buildUsage(desc, context, command, usage, null);
+    }
+    protected void buildUsage(final IPagination desc, final CommandContext context, final ICommand command, final String usage, final String usedAlias) {
+        String alias = usedAlias;
+        IFormatter formatter = context.getFormatter();
+        if (context.isPlayer()) {
+            desc.append(formatter.formatString(ChatFormattings.SLASH, ICommand.PREFIX));
+        }
+        for (Map.Entry<ICommand, String> pcommand : context.getCommandChain().entrySet()) {
+            if (pcommand.getKey() == command) {
+                alias = pcommand.getValue();
+                break;
+            } else if (pcommand.getKey() == this) {
+                break;
+            }
+            desc.append(formatter.formatString(ChatFormattings.USED_COMMAND, pcommand.getValue()));
+            desc.append(SPACE);
+        }
+        desc.append(formatter.formatString(ChatFormattings.COMMAND, alias != null ? alias : command.getName()));
+        desc.append(SPACE);
+        if (usage != null && !usage.isEmpty()) {
+            String usagestr = formatUsage(formatter, usage);
+            if (context.isPlayer())
+                usagestr.replace("$player", context.getPlayer().getName());
+            desc.append(formatter.formatString(ChatFormattings.ARGUMENTS, usagestr));
+        }
+    }
+    
     private boolean checkPermisisons(final CommandContext context, final IAbstractPermission[] perms) {
         if (perms.length == 0)
             return true;
@@ -208,5 +257,25 @@ public class HelpCommand implements ICommand, ICommandListHelp {
                 return true;
         }
         return false;
+    }
+    
+    // IHelpDescribed
+    @Override
+    public IAbstractPermission[] getRequiredPermissions() {
+        return new IAbstractPermission[0];
+    }
+    @Override
+    public CharSequence[] getUsages() {
+        return new String[]{"[command] [-n|page]"};
+    }
+    @Override
+    public CharSequence getDescription() {
+        return null;
+    }
+    @Override
+    public CharSequence getPackageName() {
+        return mainCommand instanceof IHelpDescribed
+                ? ((IHelpDescribed) mainCommand).getPackageName()
+                : new LocaleString("bukkit.help.title");
     }
 }

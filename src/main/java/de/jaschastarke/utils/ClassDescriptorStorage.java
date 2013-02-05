@@ -17,13 +17,23 @@ import org.apache.commons.lang.ClassUtils;
 public final class ClassDescriptorStorage implements Serializable {
     private static final long serialVersionUID = -8882669403001425791L;
     private static final String NEWLINE = "\n";
+    public static final String DEFAULT_FILENAME = "META-INF/descriptions.jos";
     
     private static ClassDescriptorStorage instance = null;
     private ClassDescriptorStorage() {
     }
     public static ClassDescriptorStorage getInstance() {
-        if (instance == null)
-            instance = new ClassDescriptorStorage();
+        if (instance == null) {
+            try {
+                InputStream stream = ClassDescription.class.getClassLoader().getResourceAsStream(DEFAULT_FILENAME);
+                if (stream != null)
+                    load(stream);
+            } catch (IOException e) {
+                instance = null;
+            }
+            if (instance == null)
+                instance = new ClassDescriptorStorage();
+        }
         return instance;
     }
     

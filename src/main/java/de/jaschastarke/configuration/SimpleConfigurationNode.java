@@ -28,4 +28,8 @@ public class SimpleConfigurationNode implements IConfigurationNode {
     public boolean isReadOnly() {
         return false;
     }
+    @Override
+    public Class<String> getType() {
+        return String.class;
+    }
 }

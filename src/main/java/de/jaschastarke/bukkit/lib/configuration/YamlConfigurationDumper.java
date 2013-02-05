@@ -14,6 +14,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
+import de.jaschastarke.configuration.IBaseConfigurationNode;
 import de.jaschastarke.configuration.IConfiguration;
 import de.jaschastarke.configuration.IConfigurationNode;
 import de.jaschastarke.configuration.IConfigurationSubGroup;
@@ -58,28 +59,31 @@ public class YamlConfigurationDumper {
             if (comment != null) {
                 comment = StringUtil.wrapLines(comment, WRAP_SIZE - indention - 2);
                 confsect.append(prependLines(comment, COMMENT_PREFIX));
-                confsect.append(yamlOptions.getLineBreak().toString());
+                confsect.append(yamlOptions.getLineBreak().getString());
             }
         }
         
-        for (IConfigurationNode node : conf.getConfigNodes()) {
+        for (IBaseConfigurationNode node : conf.getConfigNodes()) {
             if (confsect.length() > 0)
-                confsect.append(yamlOptions.getLineBreak().toString());
+                confsect.append(yamlOptions.getLineBreak().getString());
             
             String comment = node.getDescription();
             if (comment != null) {
                 comment = StringUtil.wrapLines(comment, WRAP_SIZE - indention - 2);
                 confsect.append(prependLines(comment, COMMENT_PREFIX));
-                confsect.append(yamlOptions.getLineBreak().toString());
+                confsect.append(yamlOptions.getLineBreak().getString());
             }
             if (node instanceof IConfigurationSubGroup) {
                 confsect.append(node.getName());
                 confsect.append(":");
-                confsect.append(yamlOptions.getLineBreak().toString());
+                confsect.append(yamlOptions.getLineBreak().getString());
                 confsect.append(getConfigurationYamlPart((IConfigurationSubGroup) node, level + 1));
-            } else {
+            } else if (node instanceof IConfigurationNode) {
                 Map<String, Object> tmp = new HashMap<String, Object>();
-                tmp.put(node.getName(), config.getValue(node));
+                Object value = conf.getValue((IConfigurationNode) node);
+                if (value instanceof IToGeneric)
+                    value = ((IToGeneric) value).toGeneric();
+                tmp.put(node.getName(), value);
                 confsect.append(yaml.dump(tmp));
             }
         }

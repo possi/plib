@@ -1,8 +1,6 @@
 package de.jaschastarke.configuration;
 
-public interface IConfigurationNode {
-    public String getName();
-    public int getOrder();
-    public String getDescription();
+public interface IConfigurationNode extends IBaseConfigurationNode {
     public boolean isReadOnly();
+    public Class<?> getType();
 }

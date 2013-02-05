@@ -1,12 +1,13 @@
 package de.jaschastarke.bukkit.lib.permissions;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 import org.bukkit.command.CommandSender;
 
 import de.jaschastarke.bukkit.lib.Core;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
+import de.jaschastarke.minecraft.lib.permissions.IDynamicPermission;
 import de.jaschastarke.minecraft.lib.permissions.IPermissionChild;
 
 public class PermissionManager {
@@ -22,10 +23,13 @@ public class PermissionManager {
                 return true;
         return false;
     }
+    public boolean hasPermission(final CommandSender player, final IDynamicPermission perm) {
+        return hasSomePermission(player, perm.getPermissions());
+    }
     public boolean hasSomePermission(final CommandSender player, final IAbstractPermission[] perms) {
         return hasSomePermission(player, Arrays.asList(perms));
     }
-    public boolean hasSomePermission(final CommandSender player, final List<IAbstractPermission> perms) {
+    public boolean hasSomePermission(final CommandSender player, final Collection<IAbstractPermission> perms) {
         for (IAbstractPermission perm : perms) {
             if (hasPermission(player, perm))
                 return true;

@@ -2,6 +2,7 @@ package de.jaschastarke.bukkit.lib.configuration;
 
 import org.bukkit.configuration.ConfigurationSection;
 
+import de.jaschastarke.configuration.IBaseConfigurationNode;
 import de.jaschastarke.configuration.IChangeableConfiguration;
 import de.jaschastarke.configuration.IConfigurationNode;
 import de.jaschastarke.configuration.IConfigurationSubGroup;
@@ -75,7 +76,7 @@ public abstract class Configuration extends MethodConfiguration implements IChan
     }
     
     public <T extends IConfigurationSubGroup> T registerSection(final T section) {
-        for (IConfigurationNode node : nodes) {
+        for (IBaseConfigurationNode node : nodes) {
             if (node.getName() == section.getName()) {
                 throw new IllegalAccessError("A configuration node with this name is alread registered: " + section.getName());
             }
@@ -91,5 +92,19 @@ public abstract class Configuration extends MethodConfiguration implements IChan
         }
         this.sort();
         return section;
+    }
+    
+    protected <T extends Enum<T>> T getEnum(final Class<T> type, final String option) {
+        return getEnum(type, option, null);
+    }
+    protected <T extends Enum<T>> T getEnum(final Class<T> type, final String option, final T defaultValue) {
+        if (config.isBoolean(option) && !config.getBoolean(option)) {
+            return null;
+        } else {
+            if (!config.contains(option) || config.get(option) == null)
+                return defaultValue;
+            T val = Enum.valueOf(type, config.getString(option).toUpperCase());
+            return (val == null) ? defaultValue : val;
+        }
     }
 }

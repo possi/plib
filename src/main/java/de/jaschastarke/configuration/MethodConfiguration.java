@@ -12,14 +12,14 @@ import de.jaschastarke.utils.ClassDescriptorStorage;
 import de.jaschastarke.utils.ClassDescriptorStorage.ClassDescription;
 
 public abstract class MethodConfiguration implements IConfiguration {
-    private static final Comparator<IConfigurationNode> SORTER = new Comparator<IConfigurationNode>() {
+    private static final Comparator<IBaseConfigurationNode> SORTER = new Comparator<IBaseConfigurationNode>() {
         @Override
-        public int compare(final IConfigurationNode arg0, final IConfigurationNode arg1) {
+        public int compare(final IBaseConfigurationNode arg0, final IBaseConfigurationNode arg1) {
             return new Integer(arg0.getOrder()).compareTo(new Integer(arg1.getOrder()));
         }
     };
     
-    protected List<IConfigurationNode> nodes = new ArrayList<IConfigurationNode>();
+    protected List<IBaseConfigurationNode> nodes = new ArrayList<IBaseConfigurationNode>();
 
     public MethodConfiguration() {
         initializeConfigNodes();
@@ -44,7 +44,7 @@ public abstract class MethodConfiguration implements IConfiguration {
     }
 
     @Override
-    public List<IConfigurationNode> getConfigNodes() {
+    public List<IBaseConfigurationNode> getConfigNodes() {
         return nodes;
     }
     

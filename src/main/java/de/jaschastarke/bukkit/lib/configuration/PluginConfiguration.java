@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import de.jaschastarke.bukkit.lib.Core;
+import de.jaschastarke.configuration.ISaveableConfiguration;
 
-public abstract class PluginConfiguration extends Configuration {
+public abstract class PluginConfiguration extends Configuration implements ISaveableConfiguration {
     protected Core plugin;
 
     protected File file;
@@ -16,6 +17,7 @@ public abstract class PluginConfiguration extends Configuration {
         file = new File(plugin.getDataFolder(), "config.yml");
     }
     
+    @Override
     public void save() {
         YamlConfigurationDumper dumper = new YamlConfigurationDumper(this);
         try {

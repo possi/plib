@@ -15,7 +15,7 @@ public interface IHelpDescribed extends ICommand {
      * an argument surround by [] interpreted as an optional argument and colored gray. Required parameters may be
      * marked with <> and gets colored darkred. All -p parameters may colored darkgray.
      */
-    public CharSequence getUsage();
+    public CharSequence[] getUsages();
     
     public CharSequence getDescription();
     

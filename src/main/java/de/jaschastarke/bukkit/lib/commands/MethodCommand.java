@@ -13,7 +13,7 @@ import de.jaschastarke.bukkit.lib.commands.annotations.Alias;
 import de.jaschastarke.bukkit.lib.commands.annotations.Description;
 import de.jaschastarke.bukkit.lib.commands.annotations.IsCommand;
 import de.jaschastarke.bukkit.lib.commands.annotations.NeedsPermission;
-import de.jaschastarke.bukkit.lib.commands.annotations.Usage;
+import de.jaschastarke.bukkit.lib.commands.annotations.Usages;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 
 public class MethodCommand implements ICommand, IHelpDescribed {
@@ -31,7 +31,7 @@ public class MethodCommand implements ICommand, IHelpDescribed {
     protected Method method;
     protected String[] aliases;
     protected String name;
-    protected String usage;
+    protected String[] usages = new String[0];
     protected CharSequence description;
     protected IAbstractPermission[] permissions;
     protected IAbstractPermission[] relatedPermissions;
@@ -70,13 +70,13 @@ public class MethodCommand implements ICommand, IHelpDescribed {
                 } else {
                     throw new IllegalArgumentException("Method-Commands with permission-annotation needs to be in a MethodCommandContainer");
                 }
-            } else if (description == null && annot instanceof Description) {
+            } else if (annot instanceof Description) {
                 if (((Description) annot).translate())
                     description = new LocaleString(((Description) annot).value());
                 else
                     description = ((Description) annot).value();
-            } else if (usage == null && annot instanceof Usage) {
-                usage = ((Usage) annot).value();
+            } else if (annot instanceof Usages) {
+                usages = ((Usages) annot).value();
             }
         }
         aliases = als.toArray(new String[als.size()]);
@@ -139,8 +139,8 @@ public class MethodCommand implements ICommand, IHelpDescribed {
         return permissions;
     }
     @Override
-    public String getUsage() {
-        return usage;
+    public String[] getUsages() {
+        return usages;
     }
     @Override
     public CharSequence getDescription() {

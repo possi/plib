@@ -3,7 +3,7 @@ package de.jaschastarke.modularize;
 import java.text.MessageFormat;
 
 public class ModuleEntry <T extends IModule> {
-    enum ModuleState {
+    public static enum ModuleState {
         ENABLED,
         DISABLED,
         INITIALIZED,

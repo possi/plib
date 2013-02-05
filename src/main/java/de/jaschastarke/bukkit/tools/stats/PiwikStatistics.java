@@ -8,12 +8,12 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Stack;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -29,7 +29,8 @@ import org.json.simple.JSONObject;
 public class PiwikStatistics implements IStatistics {
     private static final int TICKS_PER_SECOND = 20;
     private static final long DEFAULT_WAIT = 6000L; // 6000 ticks or 300 seconds or 5 minutes
-    private static final int MAX_CVAR_SIZE = 200;
+    private static final int INITIAL_DELAY = 600; // 30 seconds
+    //private static final int MAX_CVAR_SIZE = 200;
     private static final int APIV = 1;
     private URL apiUrl;
     private int idSite;
@@ -43,6 +44,8 @@ public class PiwikStatistics implements IStatistics {
     private long wait = DEFAULT_WAIT;
     
     private static final String PIWIK_FIELD_CVAR = "cvar";
+    private BukkitTask repeatingTask;
+    private BukkitTask laterTask;
     
     /**
      * Single call instantiate
@@ -106,7 +109,7 @@ public class PiwikStatistics implements IStatistics {
         pluginname = plugin.getName();
         version = plugin.getDescription().getVersion();
         
-        plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, new Runnable() {
+        laterTask = plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, new Runnable() {
             @Override
             public void run() {
                 // Well, we all know it isn't http, but as piwik is a website tracking, it doesn't tracks the url if it isn't a http url ;)
@@ -116,20 +119,29 @@ public class PiwikStatistics implements IStatistics {
                 trackEnable();
             }
         }, wait);
-        plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+        repeatingTask = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
             @Override
             public void run() {
-                final int playercount = plugin.getServer().getOnlinePlayers().length;
-                if (playercount > 0) {
-                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            trackOnlineUsage(playercount);
-                        }
-                    });
+                if (server != null) {
+                    final int playercount = plugin.getServer().getOnlinePlayers().length;
+                    if (playercount > 0) {
+                        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+                            @Override
+                            public void run() {
+                                trackOnlineUsage(playercount);
+                            }
+                        });
+                    }
                 }
             }
-        }, wait, wait);
+        }, wait + INITIAL_DELAY, wait);
+    }
+    
+    public void unregister() {
+        if (laterTask != null)
+            laterTask.cancel();
+        if (repeatingTask != null)
+            repeatingTask.cancel();
     }
     
     private void trackEnable() {
@@ -138,8 +150,11 @@ public class PiwikStatistics implements IStatistics {
         cdata.add(new String[]{"Server-Name", servername});
         cdata.add(new String[]{"Server-Version", (plugin.getServer().getName() + " " + plugin.getServer().getVersion())});
         cdata.add(new String[]{"Plugin-Version", pluginname + " " + version});
-        
-        Stack<StringBuilder> plugins = new Stack<StringBuilder>();
+
+        for (Plugin cplugin : pluginlist) {
+            cdata.add(new String[]{"Plugin", cplugin.getName()});
+        }
+        /*Stack<StringBuilder> plugins = new Stack<StringBuilder>();
         plugins.add(new StringBuilder(""));
         
         for (Plugin cplugin : pluginlist) {
@@ -155,7 +170,7 @@ public class PiwikStatistics implements IStatistics {
         for (int i = 0; i < plugins.size(); i++) {
             String plname = i == 0 ? "Plugins" : ("Plugins " + (i + 1));
             cdata.add(new String[]{plname, plugins.get(i).toString()});
-        }
+        }*/
         cdata.add(new String[]{"Mode", plugin.getServer().getOnlineMode() ? "Online" : "Offline"});
         JSONObject cvar = getCVar(cdata.toArray(new String[cdata.size()][]));
         

@@ -7,10 +7,13 @@ public class NullFormatter implements IFormatter {
     public Integer getLineLimit() {
         return null;
     }
-
     @Override
-    public Integer getLineLengthLimit() {
-        return null;
+    public String getNewLine() {
+        return AbstractFormatter.NEWLINE;
+    }
+    @Override
+    public IPagination newPaginiation() {
+        return new NoPager();
     }
 
 

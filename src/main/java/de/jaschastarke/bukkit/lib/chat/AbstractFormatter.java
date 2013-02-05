@@ -6,7 +6,9 @@ import de.jaschastarke.LocaleString;
 import de.jaschastarke.I18n;
 
 public abstract class AbstractFormatter implements IFormatter {
+
     protected I18n lang;
+    public static final String NEWLINE = "\n";
     public AbstractFormatter(final I18n lang) {
         this.lang = lang;
     }
@@ -16,8 +18,8 @@ public abstract class AbstractFormatter implements IFormatter {
         return null;
     }
     @Override
-    public Integer getLineLengthLimit() {
-        return null;
+    public String getNewLine() {
+        return NEWLINE;
     }
 
     @Override

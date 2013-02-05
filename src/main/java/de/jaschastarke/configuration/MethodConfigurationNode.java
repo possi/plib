@@ -63,4 +63,8 @@ public class MethodConfigurationNode implements IConfigurationNode {
     public String getDescription() {
         return description != null ? description.getDescription() : null;
     }
+    @Override
+    public Class<?> getType() {
+        return method.getReturnType();
+    }
 }

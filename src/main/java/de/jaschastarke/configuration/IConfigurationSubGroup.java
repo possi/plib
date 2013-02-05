@@ -1,5 +1,5 @@
 package de.jaschastarke.configuration;
 
 
-public interface IConfigurationSubGroup extends IConfiguration, IConfigurationNode {
+public interface IConfigurationSubGroup extends IConfiguration, IBaseConfigurationNode {
 }

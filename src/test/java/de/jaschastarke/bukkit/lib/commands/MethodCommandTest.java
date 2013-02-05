@@ -11,7 +11,7 @@ import de.jaschastarke.bukkit.lib.commands.annotations.Alias;
 import de.jaschastarke.bukkit.lib.commands.annotations.Description;
 import de.jaschastarke.bukkit.lib.commands.annotations.IsCommand;
 import de.jaschastarke.bukkit.lib.commands.annotations.NeedsPermission;
-import de.jaschastarke.bukkit.lib.commands.annotations.Usage;
+import de.jaschastarke.bukkit.lib.commands.annotations.Usages;
 import de.jaschastarke.bukkit.lib.permissions.PermissionManager;
 import de.jaschastarke.minecraft.lib.permissions.BasicPermission;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
@@ -44,7 +44,7 @@ public class MethodCommandTest {
             @Alias({"com", "c"})
             @Description("command.example.text")
             @NeedsPermission({"command.super", "command"})
-            @Usage("args...")
+            @Usages("args...")
             public boolean a_exampleCommand(CommandContext context) {
                 return true;
             }
@@ -117,7 +117,7 @@ public class MethodCommandTest {
 
     @Test
     public void testGetUsage() {
-        assertEquals("args...", main[0].getUsage());
+        assertEquals("args...", main[0].getUsages()[0]);
     }
 
     @Test
