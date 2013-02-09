@@ -15,7 +15,7 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
     protected boolean initialized = false;
     protected EventHandlerList listeners = new EventHandlerList(this);
     protected BukkitCommandHandler commands = new BukkitCommandHandler(this);
-    protected PermissionManager permission = new PermissionManager(this);
+    protected PermissionManager permission;
     private I18n lang;
     
     private PluginLogger log;
@@ -26,6 +26,7 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
     
     public void onInitialize() {
         log = new PluginLogger(this);
+        permission = PermissionManager.getDefaultPermissionManager(this);
         initialized = true;
     }
     

@@ -2,6 +2,8 @@ package de.jaschastarke.bukkit.lib.commands;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Method;
+
 import org.bukkit.command.CommandSender;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +60,7 @@ public class MethodCommandTest {
         main = MethodCommand.getMethodCommandsFor(container);
         
         context = new CommandContext(null);
-        context.setPermissinManager(new PermissionManager(null) {
+        context.setPermissinManager(new PermissionManager() {
             @Override
             public boolean hasPermission(CommandSender player, IAbstractPermission perm) {
                 return perm.getFullString().equals("example.command") ||
@@ -94,11 +96,41 @@ public class MethodCommandTest {
     public void testExecute() throws MissingPermissionCommandException, CommandException {
         assertEquals(true, main[0].execute(context, new String[0]));
     }
+    
+    @SuppressWarnings("unused")
+    private void testArguments(CommandContext context, String... args) {
+    }
+    @SuppressWarnings("unused")
+    private void testArguments2(CommandContext context, String arg1, String arg2, String arg3) {
+    }
+    @SuppressWarnings("unused")
+    private void testArguments3(String... args) {
+    }
+    @SuppressWarnings("unused")
+    private void testArguments4(String arg1) {
+    }
+    
+    private Class<?>[] getParameters(String method) {
+        for (Method m : this.getClass().getDeclaredMethods()) {
+            if (m.getName().equals(method))
+                return m.getParameterTypes();
+        }
+        return null;
+    }
 
     @Test
-    public void testBuildArgumentsCommandContextObjectArrayInt() {
-        assertArrayEquals(new Object[]{null, "arg", "arg2"}, MethodCommand.buildArguments(null, new String[]{"arg", "arg2"}, 1));
-        assertArrayEquals(new Object[]{context, "arg", null, null}, MethodCommand.buildArguments(context, new String[]{"arg"}, 4));
+    public void testBuildArgumentsCommandContextObjectArrayClassArray() throws SecurityException, NoSuchMethodException {
+        assertArrayEquals(new Object[]{null, "arg", "arg2"}, MethodCommand.buildArguments(null, new String[]{"arg", "arg2"}, getParameters("testArguments")));
+        assertArrayEquals(new Object[]{null, "arg", null, null}, MethodCommand.buildArguments(null, new String[]{"arg"}, getParameters("testArguments2")));
+        assertArrayEquals(new Object[]{context, "arg", "arg2", "arg3"}, MethodCommand.buildArguments(context, new String[]{"arg", "arg2", "arg3"}, getParameters("testArguments2")));
+        
+        assertArrayEquals(new Object[]{null, new String[0]}, MethodCommand.buildArguments(null, new String[]{}, getParameters("testArguments")));
+        assertArrayEquals(new Object[]{context, new String[0]}, MethodCommand.buildArguments(context, new String[]{}, getParameters("testArguments")));
+        assertArrayEquals(new Object[]{new String[0]}, MethodCommand.buildArguments(null, new String[]{}, getParameters("testArguments3")));
+        assertArrayEquals(new Object[]{new String[0]}, MethodCommand.buildArguments(context, new String[]{}, getParameters("testArguments3")));
+        
+        assertArrayEquals(new Object[]{"arg1"}, MethodCommand.buildArguments(null, new String[]{"arg1"}, getParameters("testArguments4")));
+        assertArrayEquals(new Object[]{null}, MethodCommand.buildArguments(context, new String[]{}, getParameters("testArguments4")));
     }
 
     @Test

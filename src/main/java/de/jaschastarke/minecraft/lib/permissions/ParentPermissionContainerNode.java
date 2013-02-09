@@ -12,18 +12,18 @@ public class ParentPermissionContainerNode extends SimplePermissionContainerNode
     private IPermissionContainer container = null;
     protected PermissionDefault permDefault = PermissionDefault.FALSE;
     
-    protected ParentPermissionContainerNode(final IAbstractPermission parent, final String name) {
+    public ParentPermissionContainerNode(final IAbstractPermission parent, final String name) {
         super(parent, name);
     }
-    protected ParentPermissionContainerNode(final IAbstractPermission parent, final String name, final PermissionDefault def) {
+    public ParentPermissionContainerNode(final IAbstractPermission parent, final String name, final PermissionDefault def) {
         super(parent, name);
         permDefault = def;
     }
-    protected ParentPermissionContainerNode(final IAbstractPermission parent, final String name, final IPermissionContainer childcontainer) {
+    public ParentPermissionContainerNode(final IAbstractPermission parent, final String name, final IPermissionContainer childcontainer) {
         super(parent, name);
         container = childcontainer;
     }
-    protected ParentPermissionContainerNode(final IAbstractPermission parent, final String name, final PermissionDefault def, final IPermissionContainer childcontainer) {
+    public ParentPermissionContainerNode(final IAbstractPermission parent, final String name, final PermissionDefault def, final IPermissionContainer childcontainer) {
         super(parent, name);
         permDefault = def;
         container = childcontainer;

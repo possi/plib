@@ -4,28 +4,13 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 
-import de.jaschastarke.bukkit.lib.Core;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 import de.jaschastarke.minecraft.lib.permissions.IDynamicPermission;
-import de.jaschastarke.minecraft.lib.permissions.IPermissionChild;
 
-public class PermissionManager {
-    //private Core plugin;
-    public PermissionManager(final Core plugin) {
-        //this.plugin = plugin;
-    }
-    public boolean hasPermission(final CommandSender player, final IAbstractPermission perm) {
-        if (player.hasPermission(perm.getFullString()))
-            return true;
-        if (perm instanceof IPermissionChild)
-            if (hasSomePermission(player, ((IPermissionChild) perm).getParentPermissions()))
-                return true;
-        return false;
-    }
-    public boolean hasPermission(final CommandSender player, final IDynamicPermission perm) {
-        return hasSomePermission(player, perm.getPermissions());
-    }
+public abstract class PermissionManager {
+    public abstract boolean hasPermission(CommandSender player, IAbstractPermission perm);
     public boolean hasSomePermission(final CommandSender player, final IAbstractPermission[] perms) {
         return hasSomePermission(player, Arrays.asList(perms));
     }
@@ -35,5 +20,15 @@ public class PermissionManager {
                 return true;
         }
         return false;
+    }
+    public boolean hasPermission(final CommandSender player, final IDynamicPermission perm) {
+        return hasSomePermission(player, perm.getPermissions());
+    }
+    
+    public static PermissionManager getDefaultPermissionManager(final Plugin plugin) {
+        if (plugin.getServer().getPluginManager().isPluginEnabled("Vault")) {
+            return new VaultPermissionManager(plugin);
+        }
+        return new SuperPermsPermissionManager();
     }
 }

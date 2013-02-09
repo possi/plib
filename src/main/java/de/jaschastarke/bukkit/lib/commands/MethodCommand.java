@@ -1,6 +1,7 @@
 package de.jaschastarke.bukkit.lib.commands;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -105,7 +106,7 @@ public class MethodCommand implements ICommand, IHelpDescribed {
     public boolean execute(final CommandContext context, final String[] args) throws MissingPermissionCommandException, CommandException {
         checkPermissions(context);
         try {
-            return (Boolean) method.invoke(commandclass, buildArguments(context, args, method.getParameterTypes().length));
+            return (Boolean) method.invoke(commandclass, buildArguments(context, args, method.getParameterTypes()));
         } catch (IllegalArgumentException e) {
             throw new IllegalCommandMethodException(e);
         } catch (IllegalAccessException e) {
@@ -120,18 +121,30 @@ public class MethodCommand implements ICommand, IHelpDescribed {
     }
 
     /**
-     * @param minArguments The count of required arguments by the Method (including the command context), assuming every
+     * @param classes The list of required arguments by the Method (including the command context), assuming every
      * argument is optional (so filled with nulls)
      */
-    protected static Object[] buildArguments(final CommandContext context, final Object[] args, final int minArguments) {
-        int length = Math.max(minArguments, args.length + 1);
-        Object[] newArgs = new Object[length];
-        newArgs[0] = context;
-        System.arraycopy(args, 0, newArgs, 1, args.length);
+    protected static Object[] buildArguments(final CommandContext context, final Object[] args, final Class<?>[] classes) {
+        Object[] newArgs;
+        if (classes == null || (classes.length > 0 && classes[0].isAssignableFrom(CommandContext.class))) {
+            int length = Math.max(classes == null ? 0 : classes.length, args.length + 1);
+            newArgs = new Object[length];
+            newArgs[0] = context;
+            System.arraycopy(args, 0, newArgs, 1, args.length);
+        } else {
+            int length = Math.max(classes.length, args.length);
+            newArgs = new Object[length];
+            System.arraycopy(args, 0, newArgs, 0, args.length);
+        }
+        if (classes != null && classes.length > 0 && classes[classes.length - 1].isArray()
+                && classes[classes.length - 1].getComponentType().equals(String.class)
+                && newArgs.length > 0 && newArgs[newArgs.length - 1] == null) {
+            newArgs[newArgs.length - 1] = Array.newInstance(classes[classes.length - 1].getComponentType(), 0);
+        }
         return newArgs;
     }
     protected static Object[] buildArguments(final CommandContext context, final Object[] args) {
-        return buildArguments(context, args, 0);
+        return buildArguments(context, args, null);
     }
 
     @Override
@@ -147,7 +160,8 @@ public class MethodCommand implements ICommand, IHelpDescribed {
         return description;
     }
     @Override
-    public String getPackageName() {
-        return commandclass instanceof IHasName ? ((IHasName) commandclass).getName() : null;
+    public CharSequence getPackageName() {
+        return commandclass instanceof IHasName ? ((IHasName) commandclass).getName()
+                : (commandclass instanceof IHelpDescribed ? ((IHelpDescribed) commandclass).getPackageName() : null);
     }
 }

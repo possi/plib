@@ -8,7 +8,7 @@ public abstract class AbstractCommand extends AbstractCommandList implements ICo
         if (helpcommand != null)
             registerCommand(helpcommand);
     }
-    protected ICommand getDefaultHelpCommand() {
+    protected HelpCommand getDefaultHelpCommand() {
         return new HelpCommand(this);
     }
     

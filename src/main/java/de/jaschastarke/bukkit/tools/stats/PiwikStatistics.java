@@ -8,6 +8,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Stack;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -30,7 +31,7 @@ public class PiwikStatistics implements IStatistics {
     private static final int TICKS_PER_SECOND = 20;
     private static final long DEFAULT_WAIT = 6000L; // 6000 ticks or 300 seconds or 5 minutes
     private static final int INITIAL_DELAY = 600; // 30 seconds
-    //private static final int MAX_CVAR_SIZE = 200;
+    private static final int MAX_CVAR_SIZE = 200;
     private static final int APIV = 1;
     private URL apiUrl;
     private int idSite;
@@ -151,10 +152,10 @@ public class PiwikStatistics implements IStatistics {
         cdata.add(new String[]{"Server-Version", (plugin.getServer().getName() + " " + plugin.getServer().getVersion())});
         cdata.add(new String[]{"Plugin-Version", pluginname + " " + version});
 
-        for (Plugin cplugin : pluginlist) {
+        /*for (Plugin cplugin : pluginlist) {
             cdata.add(new String[]{"Plugin", cplugin.getName()});
-        }
-        /*Stack<StringBuilder> plugins = new Stack<StringBuilder>();
+        }*/
+        Stack<StringBuilder> plugins = new Stack<StringBuilder>();
         plugins.add(new StringBuilder(""));
         
         for (Plugin cplugin : pluginlist) {
@@ -170,7 +171,7 @@ public class PiwikStatistics implements IStatistics {
         for (int i = 0; i < plugins.size(); i++) {
             String plname = i == 0 ? "Plugins" : ("Plugins " + (i + 1));
             cdata.add(new String[]{plname, plugins.get(i).toString()});
-        }*/
+        }
         cdata.add(new String[]{"Mode", plugin.getServer().getOnlineMode() ? "Online" : "Offline"});
         JSONObject cvar = getCVar(cdata.toArray(new String[cdata.size()][]));
         

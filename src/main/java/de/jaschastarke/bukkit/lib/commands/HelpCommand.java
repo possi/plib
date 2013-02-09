@@ -15,7 +15,7 @@ import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 import de.jaschastarke.utils.ArrayUtil;
 
 public class HelpCommand implements ICommand, ICommandListHelp, IHelpDescribed {
-    private static final Pattern USAGE_PARSE = Pattern.compile("\\B(?:(\\-\\w)|\\[([\\w\\.\\-\\|]+)\\]|<([\\w+\\.\\-\\|]+)>)\\B");
+    private static final Pattern USAGE_PARSE = Pattern.compile("(\\B\\-\\w(?:\\s\\w+)?\\b|\\B\\-?\\-\\w+\\b)|\\B\\[(.+?)\\]\\B|\\B<(.+?)>\\B");
     private static final int USAGE_IDX_PARAM = 1;
     private static final int USAGE_IDX_OPTIONAL = 2;
     private static final int USAGE_IDX_REQUIRED = 3;
@@ -114,9 +114,11 @@ public class HelpCommand implements ICommand, ICommandListHelp, IHelpDescribed {
         String alias = usedAlias;
         IFormatter formatter = context.getFormatter();
         
-        String title = (command.getPackageName() + SPACE + desc.getPageDisplay()).trim();
-        desc.appendln(formatter.formatString(ChatFormattings.TEXT_HEADER, title));
-        desc.setFixedLines(1, 0);
+        if (command.getPackageName() != null) {
+            String title = (command.getPackageName() + SPACE + desc.getPageDisplay()).trim();
+            desc.appendln(formatter.formatString(ChatFormattings.TEXT_HEADER, title));
+            desc.setFixedLines(1, 0);
+        }
         
         boolean something = false;
         
@@ -180,6 +182,11 @@ public class HelpCommand implements ICommand, ICommandListHelp, IHelpDescribed {
                     }
                 }
             }
+        }
+        
+        if (command.getPackageName() == null && desc.getPageCount() > 1) {
+            desc.appendln(desc.getPageDisplay());
+            desc.setFixedLines(0, 1);
         }
         
         if (something) {
