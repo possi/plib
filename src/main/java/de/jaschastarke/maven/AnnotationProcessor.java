@@ -70,11 +70,11 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         try {
             FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/descriptions.jos");
-            cds.store(new File(resource.getName()));
+            cds.store(new File(resource.toUri()));
             
             // Debugging
             FileObject txtresource = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "", "META-INF/descriptions.txt");
-            File file = new File(txtresource.getName());
+            File file = new File(txtresource.toUri());
             file.getParentFile().mkdirs();
             FileWriter txtfile = new FileWriter(file);
             txtfile.write(cds.toString());
