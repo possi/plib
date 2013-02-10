@@ -172,9 +172,11 @@ public class HelpCommand implements ICommand, ICommandListHelp, IHelpDescribed {
             for (ICommand scommand : mainCommand.getCommandList()) {
                 if (!(scommand instanceof IHelpDescribed) || checkPermisisons(context, ((IHelpDescribed) scommand).getRequiredPermissions())) {
                     if (scommand instanceof IHelpDescribed) {
-                        for (CharSequence cusage : ((IHelpDescribed) scommand).getUsages()) {
-                            buildUsage(desc, context, scommand, cusage.toString());
-                            desc.appendln();
+                        if (((IHelpDescribed) scommand).getUsages() != null) {
+                            for (CharSequence cusage : ((IHelpDescribed) scommand).getUsages()) {
+                                buildUsage(desc, context, scommand, cusage.toString());
+                                desc.appendln();
+                            }
                         }
                     } else {
                         buildUsage(desc, context, scommand, null);

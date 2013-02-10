@@ -26,9 +26,6 @@ public abstract class PermissionManager {
     }
     
     public static PermissionManager getDefaultPermissionManager(final Plugin plugin) {
-        if (plugin.getServer().getPluginManager().isPluginEnabled("Vault")) {
-            return new VaultPermissionManager(plugin);
-        }
-        return new SuperPermsPermissionManager();
+        return new SuperPermsPermissionManager(plugin);
     }
 }

@@ -119,8 +119,8 @@ public class MethodCommandTest {
     }
 
     @Test
-    public void testBuildArgumentsCommandContextObjectArrayClassArray() throws SecurityException, NoSuchMethodException {
-        assertArrayEquals(new Object[]{null, "arg", "arg2"}, MethodCommand.buildArguments(null, new String[]{"arg", "arg2"}, getParameters("testArguments")));
+    public void testBuildArgumentsCommandContextObjectArrayClassArray() throws Exception {
+        assertArrayEquals(new Object[]{null, new String[]{"arg", "arg2"}}, MethodCommand.buildArguments(null, new String[]{"arg", "arg2"}, getParameters("testArguments")));
         assertArrayEquals(new Object[]{null, "arg", null, null}, MethodCommand.buildArguments(null, new String[]{"arg"}, getParameters("testArguments2")));
         assertArrayEquals(new Object[]{context, "arg", "arg2", "arg3"}, MethodCommand.buildArguments(context, new String[]{"arg", "arg2", "arg3"}, getParameters("testArguments2")));
         
@@ -132,9 +132,14 @@ public class MethodCommandTest {
         assertArrayEquals(new Object[]{"arg1"}, MethodCommand.buildArguments(null, new String[]{"arg1"}, getParameters("testArguments4")));
         assertArrayEquals(new Object[]{null}, MethodCommand.buildArguments(context, new String[]{}, getParameters("testArguments4")));
     }
+    
+    @Test(expected = CommandException.class)
+    public void testBuildArgumentsCommandContextObjectArrayClassArrayError() throws CommandException {
+        MethodCommand.buildArguments(null, new String[]{"arg", "arg2"}, getParameters("testArguments4"));
+    }
 
     @Test
-    public void testBuildArgumentsCommandContextObjectArray() {
+    public void testBuildArgumentsCommandContextObjectArray() throws CommandException {
         assertArrayEquals(new Object[]{null, "arg"}, MethodCommand.buildArguments(null, new String[]{"arg"}));
         assertArrayEquals(new Object[]{context, "arg", "arg2"}, MethodCommand.buildArguments(context, new String[]{"arg", "arg2"}));
     }

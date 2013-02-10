@@ -1,7 +1,6 @@
 package de.jaschastarke.bukkit.lib.commands;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -16,6 +15,7 @@ import de.jaschastarke.bukkit.lib.commands.annotations.IsCommand;
 import de.jaschastarke.bukkit.lib.commands.annotations.NeedsPermission;
 import de.jaschastarke.bukkit.lib.commands.annotations.Usages;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
+import de.jaschastarke.utils.ArrayUtil;
 
 public class MethodCommand implements ICommand, IHelpDescribed {
     public static MethodCommand[] getMethodCommandsFor(final Object obj) {
@@ -124,26 +124,45 @@ public class MethodCommand implements ICommand, IHelpDescribed {
      * @param classes The list of required arguments by the Method (including the command context), assuming every
      * argument is optional (so filled with nulls)
      */
-    protected static Object[] buildArguments(final CommandContext context, final Object[] args, final Class<?>[] classes) {
-        Object[] newArgs;
-        if (classes == null || (classes.length > 0 && classes[0].isAssignableFrom(CommandContext.class))) {
-            int length = Math.max(classes == null ? 0 : classes.length, args.length + 1);
-            newArgs = new Object[length];
+    protected static Object[] buildArguments(final CommandContext context, final Object[] args, final Class<?>[] classes) throws CommandException {
+        if (classes == null) {
+            Object[] newArgs = new Object[args.length + 1];
             newArgs[0] = context;
             System.arraycopy(args, 0, newArgs, 1, args.length);
+            return newArgs;
         } else {
-            int length = Math.max(classes.length, args.length);
-            newArgs = new Object[length];
-            System.arraycopy(args, 0, newArgs, 0, args.length);
+            Object[] newArgs = new Object[classes.length];
+            int newArgsCopyOffset = 0;
+            int argsCopyLength = args.length;
+            
+            if (classes.length > 0 && classes[0].isAssignableFrom(CommandContext.class)) {
+                newArgs[0] = context;
+                newArgsCopyOffset = 1;
+            }
+            if (classes.length > 0) {
+                int l = classes.length - 1;
+                if (classes[l].isArray() && (classes[l].getComponentType().equals(String.class) || classes[l].getComponentType().equals(Object.class))) {
+                    argsCopyLength = classes.length - newArgsCopyOffset - 1;
+                    if (classes[l].getComponentType().equals(String.class)) {
+                        String[] subArgs = new String[args.length - argsCopyLength];
+                        for (int i = 0; i < subArgs.length; i++) {
+                            subArgs[i] = args[argsCopyLength + i] != null ? args[argsCopyLength + i].toString() : null;
+                        }
+                        newArgs[newArgs.length - 1] = subArgs;
+                    } else {
+                        newArgs[newArgs.length - 1] = ArrayUtil.getRange(args, argsCopyLength);
+                    }
+                }
+            }
+            
+            if (argsCopyLength + newArgsCopyOffset > newArgs.length)
+                throw new CommandException("Too much arguments");
+            
+            System.arraycopy(args, 0, newArgs, newArgsCopyOffset, argsCopyLength);
+            return newArgs;
         }
-        if (classes != null && classes.length > 0 && classes[classes.length - 1].isArray()
-                && classes[classes.length - 1].getComponentType().equals(String.class)
-                && newArgs.length > 0 && newArgs[newArgs.length - 1] == null) {
-            newArgs[newArgs.length - 1] = Array.newInstance(classes[classes.length - 1].getComponentType(), 0);
-        }
-        return newArgs;
     }
-    protected static Object[] buildArguments(final CommandContext context, final Object[] args) {
+    protected static Object[] buildArguments(final CommandContext context, final Object[] args) throws CommandException {
         return buildArguments(context, args, null);
     }
 

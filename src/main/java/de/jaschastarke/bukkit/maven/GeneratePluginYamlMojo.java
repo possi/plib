@@ -249,27 +249,33 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                     ClassDescription cd = cds.getClassFor(pobj);
                     DocComment comment = cd.getDocComment();
                     Map<String, Object> command = new LinkedHashMap<String, Object>();
-                    String usage = comment.getAnnotationValue(Settings.USAGE.toString());
-                    String permission = comment.getAnnotationValue(Settings.PERMISSION.toString());
-                    String permissionMessage = comment.getAnnotationValue("permissionMessage");
+                    if (((ICommand) pobj).getAliases() != null)
+                        command.put(Settings.ALIASES.toString(), ((ICommand) pobj).getAliases());
+                    if (comment != null) {
+                        String usage = comment.getAnnotationValue(Settings.USAGE.toString());
+                        String permission = comment.getAnnotationValue(Settings.PERMISSION.toString());
+                        String permissionMessage = comment.getAnnotationValue("permissionMessage");
+                        
+                        command.put(Settings.DESCRIPTION.toString(), comment.getDescription());
+                        if (usage != null)
+                            command.put(Settings.USAGE.toString(), usage);
+                        
+                        if (permission != null)
+                            command.put(Settings.PERMISSION.toString(), permission);
+                        if (permissionMessage != null)
+                            command.put(Settings.PERMISSION_MESSAGE.toString(), permissionMessage);
+                    }
                     
-                    command.put(Settings.DESCRIPTION.toString(), comment.getDescription());
-                    if (usage != null)
-                        command.put(Settings.USAGE.toString(), usage);
-                    command.put(Settings.ALIASES.toString(), ((ICommand) pobj).getAliases());
-                    
-                    if (permission != null)
-                        command.put(Settings.PERMISSION.toString(), permission);
-                    if (permissionMessage != null)
-                        command.put(Settings.PERMISSION_MESSAGE.toString(), permissionMessage);
                     list.put(((ICommand) pobj).getName(), command);
                 }
             } catch (ClassNotFoundException e) {
                 throw new MojoFailureException("registeredCommand class not found: " + cls);
             } catch (InstantiationException e) {
                 e.printStackTrace();
+                throw new MojoFailureException("registeredCommand class couldn't instanciated: " + cls);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
+                throw new MojoFailureException("registeredCommand class couldn't instanciated: " + cls);
             }
         }
         

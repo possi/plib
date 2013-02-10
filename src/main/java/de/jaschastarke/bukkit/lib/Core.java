@@ -26,7 +26,8 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
     
     public void onInitialize() {
         log = new PluginLogger(this);
-        permission = PermissionManager.getDefaultPermissionManager(this);
+        if (permission == null)
+            permission = PermissionManager.getDefaultPermissionManager(this);
         initialized = true;
     }
     

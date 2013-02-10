@@ -3,11 +3,10 @@ package de.jaschastarke.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.regex.Pattern;
 
 public final class ClassHelper {
-    private static final String PACKAGE_CLASS_SEP = ".";
-    private static final String PACKAGE_CLASS_SEP_RE = Pattern.quote(PACKAGE_CLASS_SEP);
+    //private static final String PACKAGE_CLASS_SEP = ".";
+    //private static final String PACKAGE_CLASS_SEP_RE = Pattern.quote(PACKAGE_CLASS_SEP);
     
     private ClassHelper() {
     }
@@ -36,8 +35,30 @@ public final class ClassHelper {
             return cls.newInstance();
         }
     }
-    
     public static Class<?> forName(final String name) throws ClassNotFoundException {
+        return forName(name, null);
+    }
+    public static Class<?> forName(final String name, final ClassLoader loader) throws ClassNotFoundException {
+        String[] cls = name.split("\\$");
+        Class<?> theclass = loader == null ? Class.forName(cls[0]) : loader.loadClass(cls[0]);
+        for (int i = 1; i < cls.length; i++) {
+            Class<?> f = null;
+            for (Class<?> sub : theclass.getDeclaredClasses()) {
+                if (sub.getSimpleName().equals(cls[i])) {
+                    f = sub;
+                    break;
+                }
+            }
+            if (f != null) {
+                theclass = f;
+            } else {
+                throw new ClassNotFoundException();
+            }
+        }
+        return theclass;
+        
+    }
+    /*public static Class<?> forName(final String name) throws ClassNotFoundException {
         try {
             return Class.forName(name);
         } catch (ClassNotFoundException e) {
@@ -108,5 +129,5 @@ public final class ClassHelper {
             }
             throw e;
         }
-    }
+    }*/
 }
