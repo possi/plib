@@ -24,6 +24,14 @@
       <url>scp://repo@ja-s.de/var/customers/webs/repo/mvn</url>
     </repository>
   </distributionManagement>
+  <ciManagement>
+    <system>jenkins</system>
+    <url>https://github.com/possi/plib/issues</url>
+  </ciManagement>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>http://dev.bukkit.org/server-mods/limited-creative/tickets/</url>
+  </issueManagement>
   
   <repositories>
     <!-- Possible public Maven Repository, containing LimitedCreative builds and other dependencies without own rep.
@@ -54,18 +62,6 @@
         <scope>provided</scope>
     </dependency>
     <dependency>
-        <groupId>org.bukkit</groupId>
-        <artifactId>bukkit</artifactId>
-        <version>1.4.7-R1.0</version>
-    </dependency>
-    <dependency>
-		<groupId>org.yaml</groupId>
-		<artifactId>snakeyaml</artifactId>
-		<version>1.9</version>
-		<type>jar</type>
-		<scope>compile</scope>
-    </dependency>
-    <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
         <version>2.0</version>
@@ -79,6 +75,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+        <!-- http://dl.bukkit.org/ -->
+        <groupId>org.bukkit</groupId>
+        <artifactId>bukkit</artifactId>
+        <version>1.4.7-R1.0</version>
+    </dependency>
+    <dependency>
+        <!-- http://dev.bukkit.org/server-mods/vault/ -->
         <groupId>net.milkbowl.vault</groupId>
         <artifactId>Vault</artifactId>
         <version>1.2.22-SNAPSHOT</version>
@@ -88,11 +91,6 @@
   <build>
     <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.11</version>
-      </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
