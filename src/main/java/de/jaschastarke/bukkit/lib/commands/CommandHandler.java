@@ -1,6 +1,7 @@
 package de.jaschastarke.bukkit.lib.commands;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -44,6 +45,13 @@ public class CommandHandler {
     }
     public void removeCommand(final ICommand command) {
         commands.remove(command);
+        for (Iterator<ICommand> iterator = commands.iterator(); iterator.hasNext();) {
+            ICommand c = iterator.next();
+            if (c instanceof AliasCommand<?>) {
+                if (((AliasCommand<?>) c).getOriginal().equals(command))
+                    iterator.remove();
+            }
+        }
     }
 
     public boolean execute(final CommandContext context, final String[] args) throws MissingPermissionCommandException, CommandException {
