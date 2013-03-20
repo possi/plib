@@ -179,7 +179,12 @@ public class PiwikStatistics implements IStatistics {
             {"action_name", servermotd},
             {PIWIK_FIELD_CVAR, cvar.toJSONString()}
         };
-        track(server + SEPERATOR + pluginname + "/load", args);
+        try {
+            track(server + SEPERATOR + pluginname + "/load", args);
+        } catch (IOException e) {
+            plugin.getLogger().warning("[Metric] Failed to access Online-Metrics. Metrics are disabled. Disable metric in config to avoid this warning.");
+            this.unregister();
+        }
     }
 
     private void trackOnlineUsage(final int playercount) {
@@ -189,10 +194,14 @@ public class PiwikStatistics implements IStatistics {
             cdata.add(new String[]{"Offline-Mode", "yes"});
         JSONObject cvar = getCVar(cdata.toArray(new String[cdata.size()][]));
             
-        track(server + SEPERATOR + pluginname + "/usage", new String[][]{
-            {"multiple", Integer.toString(playercount)}, // handled by piwikProxy.php to create a Batch-Request to simulate multiple hits
-            {PIWIK_FIELD_CVAR, cvar.toJSONString()}
-        });
+        try {
+            track(server + SEPERATOR + pluginname + "/usage", new String[][]{
+                {"multiple", Integer.toString(playercount)}, // handled by piwikProxy.php to create a Batch-Request to simulate multiple hits
+                {PIWIK_FIELD_CVAR, cvar.toJSONString()}
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -207,7 +216,7 @@ public class PiwikStatistics implements IStatistics {
         return cvar;
     }
     
-    protected void track(final String target, final String[][] addargs) {
+    protected void track(final String target, final String[][] addargs) throws IOException {
         String[][] basicargs = new String[][]{
             {"idsite", Integer.toString(idSite)},
             {"rec", "1"},
@@ -226,7 +235,7 @@ public class PiwikStatistics implements IStatistics {
             arguments = basicargs; 
         }
 
-        try {
+        //try {
             URL req = StatsUtils.buildRequest(apiUrl, arguments);
             URLConnection conn = req.openConnection();
             //System.out.println(req.toString());
@@ -235,11 +244,11 @@ public class PiwikStatistics implements IStatistics {
             InputStream in = conn.getInputStream();
             in.read();
             in.close();
-        } catch (IllegalArgumentException e) {
+        /*} catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
     
     /*class StatsListener implements Listener {
@@ -255,7 +264,7 @@ public class PiwikStatistics implements IStatistics {
     }*/
 
     @Override
-    public void trackEvent(final String event) {
+    public void trackEvent(final String event) throws IOException {
         track(server + SEPERATOR + pluginname + SEPERATOR + event, new String[0][0]);
     }
 }

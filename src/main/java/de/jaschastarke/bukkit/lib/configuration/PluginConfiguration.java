@@ -21,6 +21,7 @@ public abstract class PluginConfiguration extends Configuration implements ISave
     public void save() {
         YamlConfigurationDumper dumper = new YamlConfigurationDumper(this);
         try {
+            file.getParentFile().mkdirs();
             dumper.store(file);
         } catch (IOException e) {
             plugin.getLog().severe("Failed to write Configuration to " + file.getAbsolutePath());

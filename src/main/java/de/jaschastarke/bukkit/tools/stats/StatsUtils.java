@@ -24,9 +24,9 @@ public final class StatsUtils {
                 ip = in.readLine();
                 in.close();
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                ip = "";
             } catch (IOException e) {
-                e.printStackTrace();
+                ip = "";
             }
         }
         return ip;
