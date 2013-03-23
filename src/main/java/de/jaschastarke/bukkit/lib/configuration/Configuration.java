@@ -26,9 +26,39 @@ public abstract class Configuration extends MethodConfiguration implements IChan
 
     public void setValues(final ConfigurationSection sect) {
         config = sect;
+        if (sect != null) {
+            for (IBaseConfigurationNode node : nodes) {
+                if (node instanceof Configuration) {
+                    if (config.isConfigurationSection(node.getName())) {
+                        ((Configuration) node).setValues(config.getConfigurationSection(node.getName()));
+                    } else {
+                        ((Configuration) node).setValues(config.createSection(node.getName()));
+                    }
+                }
+            }
+        }
     }
     public ConfigurationSection getValues() {
         return config;
+    }
+    
+    public <T extends IConfigurationSubGroup> T registerSection(final T section) {
+        for (IBaseConfigurationNode node : nodes) {
+            if (node.getName() == section.getName()) {
+                throw new IllegalAccessError("A configuration node with this name is alread registered: " + section.getName());
+            }
+        }
+        nodes.add(section);
+        if (section instanceof Configuration && config != null) {
+            if (((Configuration) section).getValues() == null) {
+                if (config.isConfigurationSection(section.getName()))
+                    ((Configuration) section).setValues(config.getConfigurationSection(section.getName()));
+                else
+                    ((Configuration) section).setValues(config.createSection(section.getName()));
+            }
+        }
+        this.sort();
+        return section;
     }
     
     @Override
@@ -75,25 +105,6 @@ public abstract class Configuration extends MethodConfiguration implements IChan
         return comment != null ? comment.getDescription() : null;
     }
     
-    public <T extends IConfigurationSubGroup> T registerSection(final T section) {
-        for (IBaseConfigurationNode node : nodes) {
-            if (node.getName() == section.getName()) {
-                throw new IllegalAccessError("A configuration node with this name is alread registered: " + section.getName());
-            }
-        }
-        nodes.add(section);
-        if (section instanceof Configuration && config != null) {
-            if (((Configuration) section).getValues() == null) {
-                if (config.isConfigurationSection(section.getName()))
-                    ((Configuration) section).setValues(config.getConfigurationSection(section.getName()));
-                else
-                    ((Configuration) section).setValues(config.createSection(section.getName()));
-            }
-        }
-        this.sort();
-        return section;
-    }
-    
     protected <T extends Enum<T>> T getEnum(final Class<T> type, final String option) {
         return getEnum(type, option, null);
     }
@@ -103,8 +114,12 @@ public abstract class Configuration extends MethodConfiguration implements IChan
         } else {
             if (!config.contains(option) || config.get(option) == null)
                 return defaultValue;
-            T val = Enum.valueOf(type, config.getString(option).toUpperCase());
-            return (val == null) ? defaultValue : val;
+            try {
+                T val = Enum.valueOf(type, config.getString(option).toUpperCase());
+                return (val == null) ? defaultValue : val;
+            } catch (IllegalArgumentException e) {
+                return defaultValue;
+            }
         }
     }
 }

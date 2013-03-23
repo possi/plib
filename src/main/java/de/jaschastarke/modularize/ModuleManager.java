@@ -1,5 +1,6 @@
 package de.jaschastarke.modularize;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,6 +53,10 @@ public class ModuleManager {
             }
         }
         return null;
+    }
+    
+    public Collection<ModuleEntry<IModule>> getModuleList() {
+        return modules.values();
     }
     
     /**

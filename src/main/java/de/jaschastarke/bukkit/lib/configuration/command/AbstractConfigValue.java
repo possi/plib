@@ -51,8 +51,8 @@ public abstract class AbstractConfigValue implements IConfigValueCommand {
         } else {
             desc.append(SPACE);
         }
-        for (String group : chain) {
-            desc.append(f.formatString(ChatFormattings.USED_COMMAND, group));
+        for (int i = 0; i < chain.length - 1; i++) {
+            desc.append(f.formatString(ChatFormattings.USED_COMMAND, chain[i]));
             desc.append(SPACE);
         }
         desc.append(f.formatString(ChatFormattings.ARGUMENTS, HelpCommand.formatUsage(f, this.getUsage())));

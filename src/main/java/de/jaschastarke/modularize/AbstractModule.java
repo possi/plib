@@ -9,5 +9,8 @@ public abstract class AbstractModule implements IModule {
         }
         this.entry = pEntry;
     }
+    public ModuleEntry<IModule> getModuleEntry() {
+        return entry;
+    }
     
 }

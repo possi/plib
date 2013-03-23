@@ -41,8 +41,6 @@ public class ModuleEntry <T extends IModule> {
     public boolean activate() {
         if (state == ModuleState.NOT_INITIALIZED) {
             this.initialize();
-        } else if (state != ModuleState.INITIALIZED) {
-            throw new InvalidStateException(MessageFormat.format("Module {0} has already been initialized.", module.getClass().getName()));
         }
         if (initialState == ModuleState.ENABLED) {
             return this.enable();
