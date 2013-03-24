@@ -3,9 +3,13 @@
  */
 package de.jaschastarke.bukkit.maven;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -148,6 +152,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
      */
     private List<String> registeredCommands;
     
+    
     /**
      * @parameter default-value="${project.build.outputDirectory}/META-INF"
      * @required 
@@ -163,6 +168,9 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
     private ClassDescriptorStorage cds;
     
     private URLClassLoader loader;
+    
+    private static final int EXPECTED_GIT_HASH_LENGTH = 40;
+    private static final int TRUNCATED_GIT_HASH_LENGTH = 10; // github like
     
     /* (non-Javadoc)
      * @see org.apache.maven.plugin.Mojo#execute()
@@ -189,9 +197,48 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
             e.printStackTrace();
         }*/
         
+        String sversion = this.version;
+        if (sversion.endsWith("-SNAPSHOT")) {
+            boolean success = false;
+            try {
+                Process p = Runtime.getRuntime().exec("git rev-parse --verify HEAD");
+                BufferedReader b = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                String hash = b.readLine();
+                b.close();
+                if (hash.trim().length() == EXPECTED_GIT_HASH_LENGTH) {
+                    sversion += "-" + hash.substring(0, TRUNCATED_GIT_HASH_LENGTH);
+                    success = true;
+                } else {
+                    getLog().info("Invalid GitHash from `git rev-parse --verify HEAD`: " + hash);
+                }
+            } catch (IOException e) {
+                getLog().info("Failed to read GitHash via `git rev-parse --verify HEAD`: " + e.getMessage());
+            }
+            if (!success) {
+                File f = new File(".git/refs/heads/master");
+                if (f.canRead()) {
+                    try {
+                        BufferedReader b = new BufferedReader(new FileReader(f));
+                        String hash = b.readLine();
+                        b.close();
+                        if (hash.trim().length() == EXPECTED_GIT_HASH_LENGTH) {
+                            sversion += "-" + hash.substring(0, TRUNCATED_GIT_HASH_LENGTH);
+                            success = true;
+                        } else {
+                            getLog().info("Invalid GitHash from .git/refs/heads/master: " + hash);
+                        }
+                    } catch (FileNotFoundException e) {
+                        getLog().info("Failed to read GitHash from .git/refs/heads/master: " + e.getMessage());
+                    } catch (IOException e) {
+                        getLog().info("Failed to read GitHash from .git/refs/heads/master:" + " " + e.getMessage());
+                    }
+                }
+            }
+        }
+        
         Map<String, Object> data = new LinkedHashMap<String, Object>();
         data.put("name", this.name);
-        data.put("version", this.version);
+        data.put("version", sversion);
         data.put("main", this.mainClass);
         if (this.dependencies != null)
             data.put("dependencies", this.dependencies);
