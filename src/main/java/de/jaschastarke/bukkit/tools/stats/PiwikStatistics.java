@@ -182,7 +182,7 @@ public class PiwikStatistics implements IStatistics {
         try {
             track(server + SEPERATOR + pluginname + "/load", args);
         } catch (IOException e) {
-            plugin.getLogger().warning("[Metric] Failed to access Online-Metrics. Metrics are disabled. Disable metric in config to avoid this warning.");
+            plugin.getLogger().warning("[Metric] Failed to access Online-Metrics. Metrics are disabled. Disable metrics in config to avoid this warning.");
             this.unregister();
         }
     }
@@ -200,7 +200,7 @@ public class PiwikStatistics implements IStatistics {
                 {PIWIK_FIELD_CVAR, cvar.toJSONString()}
             });
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().warning("[Metric] Failed to access Online-Metrics. If it keeps failing, disable metrics on config.");
         }
     }
 
