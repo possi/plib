@@ -17,7 +17,8 @@ public enum ChatFormattings implements IChatFormatting {
     DESCRIPTION(ChatColor.GOLD),
     PLAYER_NAME(ChatColor.BLUE),
     SUCCESS(ChatColor.GREEN),
-    ERROR(ChatColor.RED);
+    ERROR(ChatColor.RED),
+    INFO(ChatColor.YELLOW);
     
     private String display;
     private ChatColor color;

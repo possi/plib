@@ -140,6 +140,11 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
     /**
      * @parameter
      */
+    private boolean database;
+    
+    /**
+     * @parameter
+     */
     private Properties custom;
     
     /**
@@ -240,6 +245,8 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         data.put("name", this.name);
         data.put("version", sversion);
         data.put("main", this.mainClass);
+        if (this.database)
+            data.put("database", this.database);
         if (this.dependencies != null)
             data.put("dependencies", this.dependencies);
         if (this.softdepend != null)
