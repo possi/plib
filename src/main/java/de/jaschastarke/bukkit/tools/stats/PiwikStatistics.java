@@ -200,7 +200,7 @@ public class PiwikStatistics implements IStatistics {
                 {PIWIK_FIELD_CVAR, cvar.toJSONString()}
             });
         } catch (IOException e) {
-            plugin.getLogger().warning("[Metric] Failed to access Online-Metrics. If it keeps failing, disable metrics on config.");
+            plugin.getLogger().warning("[Metric] Failed to access Online-Metrics. If it keeps failing, disable metrics in config.");
         }
     }
 
