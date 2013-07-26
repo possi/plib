@@ -6,8 +6,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import de.jaschastarke.I18n;
 import de.jaschastarke.bukkit.lib.commands.BukkitCommandHandler;
-import de.jaschastarke.bukkit.lib.database.DBManager;
+import de.jaschastarke.bukkit.lib.database.DBHelper;
 import de.jaschastarke.bukkit.lib.permissions.PermissionManager;
+import de.jaschastarke.database.DatabaseConfigurationException;
+import de.jaschastarke.database.db.Database;
 import de.jaschastarke.minecraft.lib.PluginCore;
 import de.jaschastarke.modularize.IHasModules;
 import de.jaschastarke.modularize.IModule;
@@ -19,7 +21,7 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
     protected EventHandlerList listeners = new EventHandlerList(this);
     protected BukkitCommandHandler commands = new BukkitCommandHandler(this);
     protected PermissionManager permission;
-    protected DBManager db = null;
+    protected Database db = null;
     private I18n lang;
     
     private PluginLogger log;
@@ -33,9 +35,6 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
         if (permission == null)
             permission = PermissionManager.getDefaultPermissionManager(this);
         
-        if (DBManager.isDatabaseEnabled(this))
-            db = new DBManager(this);
-        
         initialized = true;
     }
     
@@ -47,11 +46,6 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
             initialized = true;
         }
         
-        if (db != null && !db.checkAllTablesPresent()) {
-            getLog().info(lang.trans("bukkit.core.database.initialized"));
-            installDDL();
-        }
-        
         modules.activateAll();
         listeners.registerAllEvents();
     }
@@ -61,7 +55,11 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
         listeners.unregisterAllEvents();
     }
     
-    public DBManager getDatabaseManager() {
+    public Database getDatabaseConnection() throws DatabaseConfigurationException {
+        if (db == null) {
+            db = DBHelper.connect(this);
+            db.setLogger(log);
+        }
         return db;
     }
     
