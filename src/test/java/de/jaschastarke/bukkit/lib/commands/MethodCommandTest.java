@@ -47,13 +47,13 @@ public class MethodCommandTest {
             @Description("command.example.text")
             @NeedsPermission({"command.super", "command"})
             @Usages("args...")
-            public boolean a_exampleCommand(CommandContext context) {
+            public boolean exampleCommand(CommandContext context) {
                 return true;
             }
             
             @IsCommand("declined")
             @NeedsPermission("other")
-            public boolean b_declinedCommand(CommandContext context) {
+            public boolean declinedCommand(CommandContext context) {
                 return true;
             }
         };
@@ -75,6 +75,14 @@ public class MethodCommandTest {
             }
         });
     }
+    
+    private MethodCommand getMainMethodCommand(String name) {
+        for (MethodCommand c : main) {
+            if (c.getMethod().getName().equals(name))
+                return c;
+        }
+        return null;
+    }
 
     @Test
     public void testGetMethodCommandsFor() {
@@ -84,17 +92,17 @@ public class MethodCommandTest {
 
     @Test
     public void testGetName() {
-        assertEquals("command", main[0].getName());
+        assertEquals("command", getMainMethodCommand("exampleCommand").getName());
     }
 
     @Test
     public void testGetAliases() {
-        assertArrayEquals(new String[]{"com",  "c"}, main[0].getAliases());
+        assertArrayEquals(new String[]{"com",  "c"}, getMainMethodCommand("exampleCommand").getAliases());
     }
 
     @Test
     public void testExecute() throws MissingPermissionCommandException, CommandException {
-        assertEquals(true, main[0].execute(context, new String[0]));
+        assertEquals(true, getMainMethodCommand("exampleCommand").execute(context, new String[0]));
     }
     
     @SuppressWarnings("unused")
@@ -146,7 +154,7 @@ public class MethodCommandTest {
 
     @Test
     public void testGetRequiredPermissions() {
-        IAbstractPermission[] perms = main[0].getRequiredPermissions();
+        IAbstractPermission[] perms = getMainMethodCommand("exampleCommand").getRequiredPermissions();
         assertEquals(2, perms.length);
         assertEquals("example.command.super", perms[0].getFullString());
         assertEquals("example.command", perms[1].getFullString());
@@ -154,23 +162,23 @@ public class MethodCommandTest {
 
     @Test
     public void testGetUsage() {
-        assertEquals("args...", main[0].getUsages()[0]);
+        assertEquals("args...", getMainMethodCommand("exampleCommand").getUsages()[0]);
     }
 
     @Test
     public void testGetDescription() {
-        assertEquals("command.example.text", main[0].getDescription().toString());
+        assertEquals("command.example.text", getMainMethodCommand("exampleCommand").getDescription().toString());
     }
 
     @Test
     public void testGetPackageName() {
-        assertEquals("Test-Package", main[0].getPackageName());
+        assertEquals("Test-Package", getMainMethodCommand("exampleCommand").getPackageName());
         assertEquals(null, commands2[0].getPackageName());
     }
 
     @Test(expected = MissingPermissionCommandException.class)
     public void testRequiredPermissions() throws MissingPermissionCommandException, CommandException {
-        main[1].execute(context, null);
+        getMainMethodCommand("declinedCommand").execute(context, null);
     }
 
 }

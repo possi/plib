@@ -183,4 +183,7 @@ public class MethodCommand implements ICommand, IHelpDescribed {
         return commandclass instanceof IHasName ? ((IHasName) commandclass).getName()
                 : (commandclass instanceof IHelpDescribed ? ((IHelpDescribed) commandclass).getPackageName() : null);
     }
+    public Method getMethod() {
+        return method;
+    }
 }
