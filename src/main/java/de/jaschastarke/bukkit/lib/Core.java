@@ -90,7 +90,14 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
     protected ModuleManager modules = new ModuleManager();
     @Override
     public <T extends IModule> ModuleEntry<T> addModule(final T module) {
-        return modules.addModule(module);
+        try {
+            ModuleEntry<T> modentry = modules.addModule(module);
+            return modentry;
+        } catch (Exception e) {
+            e.printStackTrace();
+            getLog().warn("Unexpected Exception while loading Module " + module.getClass().getCanonicalName() + ". The module wasn't loaded");
+            return null;
+        }
     }
     @Override
     public <T extends IModule> T getModule(final Class<T> module) {

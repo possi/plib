@@ -1,6 +1,7 @@
 package de.jaschastarke.bukkit.lib.database;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import org.bukkit.Bukkit;
@@ -14,6 +15,10 @@ import de.jaschastarke.database.Type;
 import de.jaschastarke.database.db.Database;
 
 public final class DBHelper {
+    private static final String MYSQL_USER_FIELD = "user";
+    private static final String MYSQL_PASSWORD_FIELD = "password";
+    private static final String BUKKIT_USER_FIELD = "username";
+    private static final String BUKKIT_PASSWORD_FIELD = MYSQL_PASSWORD_FIELD; // I'm not sure with this, but i won't to pleasure checkstyle
     private DBHelper() {
     }
     
@@ -43,8 +48,8 @@ public final class DBHelper {
         switch (type) {
             case MySQL:
                 prop.put("autoReconnect", "true");
-                prop.put("user", dbc.getString("username"));
-                prop.put("password", dbc.getString("password"));
+                prop.put(MYSQL_USER_FIELD, dbc.getString(BUKKIT_USER_FIELD));
+                prop.put(MYSQL_PASSWORD_FIELD, dbc.getString(BUKKIT_PASSWORD_FIELD));
                 db = new de.jaschastarke.database.mysql.Database(driver);
                 db.connect(url, prop);
                 break;
@@ -56,6 +61,12 @@ public final class DBHelper {
                 break;
             default:
                 throw new DatabaseConfigurationException("Database-Type for Connection \"" + url + "\" not supported.");
+        }
+        try {
+            if (db.getConnection().getMetaData().supportsTransactions())
+                db.getConnection().setAutoCommit(true);
+        } catch (SQLException e) {
+            plugin.getLogger().info("Failed to enable autocommit: " + e.getMessage());
         }
         return db;
     }

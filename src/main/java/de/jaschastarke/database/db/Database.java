@@ -66,4 +66,30 @@ public abstract class Database implements IDatabase {
     public PreparedStatement prepare(final String sql) throws SQLException {
         return connection.prepareStatement(sql);
     }
+    
+    private boolean defaultAutoCommitState = true;
+    private boolean inTransaction = false;
+    public boolean startTransaction() throws SQLException {
+        if (inTransaction)
+            throw new SQLException("Already in Transaction");
+        defaultAutoCommitState = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        inTransaction = true;
+        return true;
+    }
+    public boolean endTransaction() throws SQLException {
+        connection.commit();
+        connection.setAutoCommit(defaultAutoCommitState);
+        inTransaction = false;
+        return true;
+    }
+    public boolean revertTransaction() throws SQLException {
+        connection.rollback();
+        connection.setAutoCommit(defaultAutoCommitState);
+        inTransaction = false;
+        return true;
+    }
+    public boolean isInTransaction() {
+        return inTransaction;
+    }
 }
