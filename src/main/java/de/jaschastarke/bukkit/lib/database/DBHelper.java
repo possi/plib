@@ -44,7 +44,7 @@ public final class DBHelper {
             case MySQL:
                 prop.put("autoReconnect", "true");
                 prop.put("user", dbc.getString("username"));
-                prop.put("passwort", dbc.getString("password"));
+                prop.put("password", dbc.getString("password"));
                 db = new de.jaschastarke.database.mysql.Database(driver);
                 db.connect(url, prop);
                 break;
