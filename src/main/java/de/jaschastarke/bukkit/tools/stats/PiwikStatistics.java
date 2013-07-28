@@ -139,10 +139,14 @@ public class PiwikStatistics implements IStatistics {
     }
     
     public void unregister() {
-        if (laterTask != null)
+        if (laterTask != null) {
             laterTask.cancel();
-        if (repeatingTask != null)
+            laterTask = null;
+        }
+        if (repeatingTask != null) {
             repeatingTask.cancel();
+            repeatingTask = null;
+        }
     }
     
     private void trackEnable() {
