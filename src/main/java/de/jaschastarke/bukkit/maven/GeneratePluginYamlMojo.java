@@ -210,7 +210,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                 BufferedReader b = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 String hash = b.readLine();
                 b.close();
-                if (hash.trim().length() == EXPECTED_GIT_HASH_LENGTH) {
+                if (hash != null && hash.trim().length() == EXPECTED_GIT_HASH_LENGTH) {
                     sversion += "-" + hash.substring(0, TRUNCATED_GIT_HASH_LENGTH);
                     success = true;
                 } else {
@@ -248,7 +248,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         if (this.database)
             data.put("database", this.database);
         if (this.dependencies != null)
-            data.put("dependencies", this.dependencies);
+            data.put("depend", this.dependencies);
         if (this.softdepend != null)
             data.put("softdepend", this.softdepend);
         
