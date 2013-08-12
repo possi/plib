@@ -18,15 +18,6 @@ import de.jaschastarke.MultipleResourceBundle;
 public final class ClassDescriptorStorage {
     private static final String NEWLINE = "\n";
     
-    private static ClassDescriptorStorage instance = null;
-    @Deprecated // lets try avoiding singletons
-    public static ClassDescriptorStorage getInstance() {
-        if (instance == null) {
-            instance = new ClassDescriptorStorage();
-        }
-        return instance;
-    }
-    
     private String target = "META-INF.doccomments";
     private Locale locale = null;
     private URLClassLoader loader = null;
@@ -39,11 +30,6 @@ public final class ClassDescriptorStorage {
     public ClassDescriptorStorage(final URLClassLoader loader) {
         this.loader = loader;
     }
-    /**
-     * @param locale
-     * @param target 
-     * @param loader
-     */
     public ClassDescriptorStorage(final Locale locale, final String target, final URLClassLoader loader) {
         this.locale = locale;
         if (target != null)
@@ -102,51 +88,7 @@ public final class ClassDescriptorStorage {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        /*OutputStream fos = null;
-        ObjectOutputStream o = null;
-        
-        file.getParentFile().mkdirs();
-        
-        try {
-          fos = new FileOutputStream(file);
-          o = new ObjectOutputStream(fos);
-          o.writeObject(this);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                o.close();
-                fos.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }*/
     }
-    /*public static ClassDescriptorStorage load(final File file) throws IOException {
-        InputStream fis = null;
-        fis = new FileInputStream(file);
-        load(fis);
-        fis.close();
-        return instance;
-    }
-
-    public static ClassDescriptorStorage load(final InputStream resource) throws IOException {
-        ObjectInputStream o = null;
-
-        try {
-          o = new ObjectInputStream(resource);
-          instance = (ClassDescriptorStorage) o.readObject();
-        } catch (ClassNotFoundException e) {
-            System.err.println(e);
-        } finally {
-            try {
-                o.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return instance;
-    }*/
     
     @Override
     public String toString() {
