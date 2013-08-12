@@ -93,7 +93,7 @@ import de.jaschastarke.utils.ClassHelper;
  * @requiresDependencyResolution compile
  */
 public class GeneratePluginYamlMojo extends AbstractExecMojo {
-    private static final int FILE_WIDTH = 80;
+    private static final int FILE_WIDTH = 999999;
     
     private enum Settings {
         DEFAULT("default"),
