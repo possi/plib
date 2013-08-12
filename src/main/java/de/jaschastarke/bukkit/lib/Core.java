@@ -15,11 +15,13 @@ import de.jaschastarke.modularize.IHasModules;
 import de.jaschastarke.modularize.IModule;
 import de.jaschastarke.modularize.ModuleEntry;
 import de.jaschastarke.modularize.ModuleManager;
+import de.jaschastarke.utils.ClassDescriptorStorage;
 
 public class Core extends JavaPlugin implements PluginCore, IHasModules {
     protected boolean initialized = false;
     protected EventHandlerList listeners = new EventHandlerList(this);
     protected BukkitCommandHandler commands = new BukkitCommandHandler(this);
+    protected ClassDescriptorStorage cds = null;
     protected PermissionManager permission;
     protected Database db = null;
     private I18n lang;
@@ -105,5 +107,11 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
     }
     public Collection<ModuleEntry<IModule>> getModules() {
         return modules.getModuleList();
+    }
+
+    public ClassDescriptorStorage getDocCommentStorage() {
+        if (cds == null)
+            cds = new ClassDescriptorStorage();
+        return cds;
     }
 }

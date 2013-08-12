@@ -27,6 +27,6 @@ public class PluginLang extends I18n {
             e.printStackTrace();
         }
 
-        bundle = new MultipleResourceBundle(locale, new String[]{"de.jaschastarke.bukkit.messages", bundleName}, loader);
+        bundle = new MultipleResourceBundle(locale, new String[]{I18n.class.getPackage().getName() + ".bukkit.messages", bundleName}, loader);
     }
 }

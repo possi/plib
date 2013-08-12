@@ -21,17 +21,25 @@ public abstract class MethodConfiguration implements IConfiguration {
     
     protected List<IBaseConfigurationNode> nodes = new ArrayList<IBaseConfigurationNode>();
 
+    private ClassDescriptorStorage cds = null;
     public MethodConfiguration() {
+        initializeConfigNodes();
+    }
+    public MethodConfiguration(final ClassDescriptorStorage cds) {
+        this.cds = cds;
         initializeConfigNodes();
     }
     
     private void initializeConfigNodes() {
-        ClassDescription cd = ClassDescriptorStorage.getInstance().getClassFor(this);
+        ClassDescription cd = null;
+        if (cds != null)
+            cd = cds.getClassFor(this);
         for (Method method : this.getClass().getMethods()) {
             IsConfigurationNode annot = method.getAnnotation(IsConfigurationNode.class);
             if (annot != null) {
                 MethodConfigurationNode node = new MethodConfigurationNode(method, annot);
-                node.setDescription(cd.getElDocComment(method.getName()));
+                if (cd != null)
+                    node.setDescription(cd.getElDocComment(method.getName()));
                 nodes.add(node);
             }
         }

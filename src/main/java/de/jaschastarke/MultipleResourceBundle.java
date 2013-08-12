@@ -17,24 +17,28 @@ public class MultipleResourceBundle extends ResourceBundle {
     public MultipleResourceBundle(final Locale locale, final Collection<String> bundleNames) {
         this.locale = locale == null ? Locale.getDefault() : locale;
         for (String bundleName : bundleNames) {
-            addResourceBundle(bundleName);
+            if (bundleName != null)
+                addResourceBundle(bundleName);
         }
     }
     public MultipleResourceBundle(final Locale locale, final String[] bundleNames) {
         this.locale = locale == null ? Locale.getDefault() : locale;
         for (String bundleName : bundleNames) {
-            addResourceBundle(bundleName);
+            if (bundleName != null)
+                addResourceBundle(bundleName);
         }
     }
     public MultipleResourceBundle(final Locale locale, final String bundleName) {
         this.locale = locale == null ? Locale.getDefault() : locale;
-        addResourceBundle(bundleName);
+        if (bundleName != null)
+            addResourceBundle(bundleName);
     }
     public MultipleResourceBundle(final Locale locale, final String[] bundleNames, final URLClassLoader loader) {
         this.locale = locale == null ? Locale.getDefault() : locale;
         this.loader = loader;
         for (String bundleName : bundleNames) {
-            addResourceBundle(bundleName);
+            if (bundleName != null)
+                addResourceBundle(bundleName);
         }
     }
     public void addResourceBundle(final String bundleName) {

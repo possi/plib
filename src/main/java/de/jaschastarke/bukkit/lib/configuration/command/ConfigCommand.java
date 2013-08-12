@@ -22,10 +22,16 @@ public class ConfigCommand implements ICommand, IHelpDescribed {
     private IAbstractPermission[] perms;
     private CharSequence packageName = new LocaleString("bukkit.help.configuration.title");
     private static final String SAVE = "save";
-    
+
+    public ConfigCommand(final Configuration config) {
+        this(config, null);
+    }
     public ConfigCommand(final Configuration config, final IAbstractPermission perm) {
         conf = config;
-        perms = new IAbstractPermission[]{perm};
+        if (perm != null)
+            perms = new IAbstractPermission[]{perm};
+        else
+            perms = new IAbstractPermission[]{};
     }
 
     public String getUsage(final String option) {

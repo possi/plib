@@ -22,7 +22,6 @@ public class CommandContext {
         this.sender = sender;
     }
     public void response(final String msg) {
-        // TODO: IMPORTANT: MAKE BETTER HANDLED
         sender.sendMessage(msg);
     }
     public CommandSender getSender() {

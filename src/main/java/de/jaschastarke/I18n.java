@@ -27,7 +27,7 @@ public class I18n {
     }
     
     protected void useBundle(final String bundleName, final Locale locale) {
-        bundle = new MultipleResourceBundle(locale, new String[]{"de.jaschastarke.bukkit.messages", bundleName});
+        bundle = new MultipleResourceBundle(locale, new String[]{I18n.class.getPackage().getName() + ".bukkit.messages", bundleName});
     }
     
     public ResourceBundle getResourceBundle() {

@@ -1,40 +1,60 @@
 package de.jaschastarke.utils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.net.URLClassLoader;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.MissingResourceException;
+import java.util.Properties;
 
 import org.apache.commons.lang.ClassUtils;
 
-public final class ClassDescriptorStorage implements Serializable {
-    private static final long serialVersionUID = -8882669403001425791L;
+import de.jaschastarke.MultipleResourceBundle;
+
+public final class ClassDescriptorStorage {
     private static final String NEWLINE = "\n";
-    public static final String DEFAULT_FILENAME = "META-INF/descriptions.jos";
     
     private static ClassDescriptorStorage instance = null;
-    private ClassDescriptorStorage() {
-    }
+    @Deprecated // lets try avoiding singletons
     public static ClassDescriptorStorage getInstance() {
         if (instance == null) {
-            try {
-                InputStream stream = ClassDescription.class.getClassLoader().getResourceAsStream(DEFAULT_FILENAME);
-                if (stream != null)
-                    load(stream);
-            } catch (IOException e) {
-                instance = null;
-            }
-            if (instance == null)
-                instance = new ClassDescriptorStorage();
+            instance = new ClassDescriptorStorage();
         }
         return instance;
+    }
+    
+    private String target = "META-INF.doccomments";
+    private Locale locale = null;
+    private URLClassLoader loader = null;
+    private MultipleResourceBundle rb = null;
+    public ClassDescriptorStorage() {
+    }
+    public ClassDescriptorStorage(final Locale locale) {
+        this.locale = locale;
+    }
+    public ClassDescriptorStorage(final URLClassLoader loader) {
+        this.loader = loader;
+    }
+    /**
+     * @param locale
+     * @param target 
+     * @param loader
+     */
+    public ClassDescriptorStorage(final Locale locale, final String target, final URLClassLoader loader) {
+        this.locale = locale;
+        if (target != null)
+            this.target = target;
+        this.loader = loader;
+    }
+    
+    public MultipleResourceBundle getResourceBundle() {
+        if (rb == null)
+            rb = new MultipleResourceBundle(locale, new String[]{this.target}, loader);
+        return rb;
     }
     
     private Map<String, ClassDescription> descriptions = new HashMap<String, ClassDescription>();
@@ -53,8 +73,36 @@ public final class ClassDescriptorStorage implements Serializable {
         return getClassFor(cls.getClass().getName());
     }
     
+    public void store() {
+        store(new File(getTargetPath()));
+    }
+    
+    public String getTargetPath() {
+        return target.replace(".", "/") + ".properties";
+    }
+    
+    public String getTarget() {
+        return target;
+    }
     public void store(final File file) {
-        OutputStream fos = null;
+        Properties prop = new Properties();
+        for (Map.Entry<String, ClassDescription> cls : descriptions.entrySet()) {
+            DocComment comment = cls.getValue().getDocComment(false);
+            if (comment != null)
+                prop.setProperty(cls.getKey(), comment.toString());
+            for (Entry<String, DocComment> el : cls.getValue().getElements().entrySet()) {
+                prop.setProperty(cls.getKey() + "*" + el.getKey(), el.getValue().toString());
+            }
+        }
+
+        try {
+            if (!file.getParentFile().exists())
+                file.getParentFile().mkdirs();
+            prop.store(new FileOutputStream(file), "");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        /*OutputStream fos = null;
         ObjectOutputStream o = null;
         
         file.getParentFile().mkdirs();
@@ -72,9 +120,9 @@ public final class ClassDescriptorStorage implements Serializable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+        }*/
     }
-    public static ClassDescriptorStorage load(final File file) throws IOException {
+    /*public static ClassDescriptorStorage load(final File file) throws IOException {
         InputStream fis = null;
         fis = new FileInputStream(file);
         load(fis);
@@ -98,7 +146,7 @@ public final class ClassDescriptorStorage implements Serializable {
             }
         }
         return instance;
-    }
+    }*/
     
     @Override
     public String toString() {
@@ -109,9 +157,7 @@ public final class ClassDescriptorStorage implements Serializable {
         return str.trim();
     }
     
-    public class ClassDescription implements Serializable {
-        private static final long serialVersionUID = -4605521733206873274L;
-        
+    public class ClassDescription {
         private String name;
         private DocComment comment;
         private Map<String, DocComment> elComments = new HashMap<String, DocComment>();
@@ -126,13 +172,33 @@ public final class ClassDescriptorStorage implements Serializable {
             elComments.put(el, new DocComment(doc));
         }
         public DocComment getDocComment() {
+            return getDocComment(true);
+        }
+        public DocComment getDocComment(final boolean load) {
+            if (load && comment == null) {
+                try {
+                    comment = new DocComment(getResourceBundle().getString(name));
+                } catch (MissingResourceException e) {
+                    comment = null;
+                }
+            }
             return comment;
         }
         public DocComment getElDocComment(final String el) {
+            if (!elComments.containsKey(el)) {
+                try {
+                    elComments.put(el, new DocComment(getResourceBundle().getString(name + "*" + el)));
+                } catch (MissingResourceException e) {
+                    elComments.put(el, null);
+                }
+            }
             return elComments.get(el);
         }
         public Class<?> getTheClass() throws ClassNotFoundException {
             return ClassUtils.getClass(name);
+        }
+        public Map<String, DocComment> getElements() {
+            return elComments;
         }
         
         @Override

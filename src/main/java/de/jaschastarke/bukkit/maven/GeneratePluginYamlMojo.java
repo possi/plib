@@ -157,13 +157,6 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
      */
     private List<String> registeredCommands;
     
-    
-    /**
-     * @parameter default-value="${project.build.outputDirectory}/META-INF"
-     * @required 
-     */
-    private String metaDirectory;
-    
     /**
      * @parameter default-value="${project.build.outputDirectory}"
      * @required 
@@ -182,25 +175,12 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        try {
-            cds = ClassDescriptorStorage.load(new File(this.metaDirectory + "/descriptions.jos"));
-        } catch (IOException e) {
-            throw new MojoExecutionException("Failed to load class doccomments", e);
-        }
-
         List<URL> classpathURLs = new ArrayList<URL>();
         //this.addRelevantPluginDependenciesToClasspath(classpathURLs);
         this.addRelevantProjectDependenciesToClasspath(classpathURLs);
         loader = new URLClassLoader(classpathURLs.toArray(new URL[classpathURLs.size()]), getClass().getClassLoader());
         
-        /*try {
-            URL url = new File(this.classes_directory).toURI().toURL();
-            Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[]{URL.class});
-            method.setAccessible(true);
-            method.invoke(ClassLoader.getSystemClassLoader(), new Object[]{url});
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
+        cds = new ClassDescriptorStorage(loader);
         
         String sversion = this.version;
         if (sversion.endsWith("-SNAPSHOT")) {
@@ -300,8 +280,11 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                 }
                 
                 if (pobj instanceof ICommand) {
-                    ClassDescription cd = cds.getClassFor(pobj);
-                    DocComment comment = cd.getDocComment();
+                    DocComment comment = null;
+                    if (cds != null) {
+                        ClassDescription cd = cds.getClassFor(pobj);
+                        comment = cd.getDocComment();
+                    }
                     Map<String, Object> command = new LinkedHashMap<String, Object>();
                     if (((ICommand) pobj).getAliases() != null)
                         command.put(Settings.ALIASES.toString(), ((ICommand) pobj).getAliases());
@@ -358,7 +341,9 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
 
                 if (pobj instanceof IPermission) {
                     debug("Registered Permission is IPermission {0} <{1}>", ((IAbstractPermission) pobj).getFullString(), pobj.getClass().getName());
-                    DocComment comment = cds.getClassFor(pobj).getDocComment();
+                    DocComment comment = null;
+                    if (cds != null)
+                        comment = cds.getClassFor(pobj).getDocComment();
                     if (comment == null)
                         addPermissionToList(list, (IPermission) pobj);
                     else
@@ -403,6 +388,8 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         }
     }
     private DocComment getContainerPropertyDoc(final IContainer set, final IPermission perm) {
+        if (cds == null)
+            return null;
         ClassDescription cd = cds.getClassFor(set);
         Class<?> cls = set.getClass();
         for (Field field : cls.getFields()) {
@@ -423,6 +410,8 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         return null;
     }
     private DocComment getEnumPropertyDoc(final Enum<?> set) {
+        if (cds == null)
+            return null;
         ClassDescription cd = cds.getClassFor(set);
         Class<?> cls = set.getClass();
         for (Field field : cls.getFields()) {

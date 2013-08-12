@@ -1,7 +1,6 @@
 package de.jaschastarke.maven;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -46,11 +45,9 @@ public class AnnotationProcessor extends AbstractProcessor {
             return false;
         alreadyRun = true;
         
-        ClassDescriptorStorage cds = ClassDescriptorStorage.getInstance();
+        ClassDescriptorStorage cds = new ClassDescriptorStorage();
         
         for (Element elem: roundEnv.getElementsAnnotatedWith(ArchiveDocComments.class)) {
-            //ArchiveDocComments annot = elem.getAnnotation(ArchiveDocComments.class);
-            
             TypeElement telem = (TypeElement) elem; // Because the Annotation is targeted to Types only
             Name name = elementUtils.getBinaryName(telem);
             
@@ -69,16 +66,8 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
 
         try {
-            FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/descriptions.jos");
+            FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", cds.getTargetPath());
             cds.store(new File(resource.toUri()));
-            
-            // Debugging
-            FileObject txtresource = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "", "META-INF/descriptions.txt");
-            File file = new File(txtresource.toUri());
-            file.getParentFile().mkdirs();
-            FileWriter txtfile = new FileWriter(file);
-            txtfile.write(cds.toString());
-            txtfile.close();
         } catch (IOException e) {
             throw new RuntimeException("Annotation processor failed to write output file", e);
         }
