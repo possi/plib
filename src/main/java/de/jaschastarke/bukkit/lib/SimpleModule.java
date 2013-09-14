@@ -3,10 +3,6 @@ package de.jaschastarke.bukkit.lib;
 import org.bukkit.event.Listener;
 
 import de.jaschastarke.modularize.AbstractModule;
-import de.jaschastarke.modularize.IHasModules;
-import de.jaschastarke.modularize.IModule;
-import de.jaschastarke.modularize.ModuleEntry;
-import de.jaschastarke.modularize.ModuleManager;
 
 /**
  * 
@@ -14,7 +10,7 @@ import de.jaschastarke.modularize.ModuleManager;
  * When the Module is instanceof Bukkit Event Listener-Interface, it is automatically registered.
  *
  */
-public abstract class SimpleModule <E extends Core> extends AbstractModule implements IHasModules {
+public abstract class SimpleModule <E extends Core> extends AbstractModule {
     protected E plugin;
     public boolean debug = false;
     protected EventHandlerList listeners;
@@ -42,27 +38,14 @@ public abstract class SimpleModule <E extends Core> extends AbstractModule imple
     @Override
     public void onEnable() {
         enabled = true;
-        modules.activateAll();
         listeners.registerAllEvents();
     }
     @Override
     public void onDisable() {
         enabled = false;
-        modules.disableAll();
         listeners.unregisterAllEvents();
     }
     public String getName() {
         return this.getClass().getSimpleName();
-    }
-
-    /* IHasModules */
-    protected ModuleManager modules = new ModuleManager();
-    @Override
-    public <T extends IModule> ModuleEntry<T> addModule(final T module) {
-        return modules.addModule(module);
-    }
-    @Override
-    public <T extends IModule> T getModule(final Class<T> module) {
-        return modules.getModuleType(module);
     }
 }

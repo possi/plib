@@ -15,6 +15,17 @@ public abstract class CoreModule <E extends Core> extends SimpleModule<E> implem
     public CoreModule(final E plugin) {
         super(plugin);
     }
+    
+    @Override
+    public void onEnable() {
+        modules.activateAll();
+        super.onEnable();
+    }
+    @Override
+    public void onDisable() {
+        modules.disableAll();
+        super.onDisable();
+    }
 
     /* IHasModules */
     protected ModuleManager modules = new ModuleManager();
