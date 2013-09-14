@@ -29,6 +29,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.bukkit.permissions.PermissionDefault;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.emitter.ScalarAnalysis;
 
 import de.jaschastarke.bukkit.lib.commands.ICommand;
 import de.jaschastarke.maven.AbstractExecMojo;
@@ -244,7 +245,12 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
             data.put("permissions", this.getPermissions());
         }
         
-        DumperOptions options = new DumperOptions();
+        DumperOptions options = new DumperOptions() {
+            @Override
+            public DumperOptions.ScalarStyle calculateScalarStyle(final ScalarAnalysis analysis, final DumperOptions.ScalarStyle style) {
+                return analysis.multiline ? DumperOptions.ScalarStyle.LITERAL : style;
+             }
+        };
         options.setWidth(FILE_WIDTH);
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(options);
