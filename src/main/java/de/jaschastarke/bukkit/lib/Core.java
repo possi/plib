@@ -1,5 +1,6 @@
 package de.jaschastarke.bukkit.lib;
 
+import java.sql.SQLException;
 import java.util.Collection;
 
 import org.bukkit.plugin.java.JavaPlugin;
@@ -55,6 +56,14 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules {
     public void onDisable() {
         modules.disableAll();
         listeners.unregisterAllEvents();
+        if (db != null) {
+            try {
+                db.getConnection().close();
+            } catch (SQLException e) {
+                getLog().severe("Failed to close Database-Connection: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
     }
     
     public Database getDatabaseConnection() throws DatabaseConfigurationException {
