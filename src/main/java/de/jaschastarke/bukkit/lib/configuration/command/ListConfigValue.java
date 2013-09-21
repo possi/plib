@@ -37,9 +37,9 @@ public class ListConfigValue extends AbstractConfigValue {
                     ConfigurableList<?> values = (ConfigurableList<?>) config.getValue(node);
                     boolean success = true;
                     if (args[0].equals(ADD))
-                        values.add(value);
+                        values.addSetting(value);
                     else if (args[0].equals(REMOVE))
-                        success = values.remove(value);
+                        success = values.removeSetting(value);
                     config.setValue(node, value);
                     if (success)
                         context.response(f.formatString(ChatFormattings.SUCCESS, f.getString("bukkit.help.configuration.setted", node.getName())));
