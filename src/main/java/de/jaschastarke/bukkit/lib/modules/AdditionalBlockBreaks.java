@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.material.Attachable;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -19,10 +20,11 @@ import org.bukkit.metadata.MetadataValue;
 import de.jaschastarke.bukkit.lib.Core;
 import de.jaschastarke.bukkit.lib.SimpleModule;
 import de.jaschastarke.bukkit.lib.events.AttachedBlockDestroyedByPlayerEvent;
+import de.jaschastarke.bukkit.lib.events.WaterDestroyedBlockEvent;
 import de.jaschastarke.bukkit.lib.events.AttachedBlockDestroyedByPlayerEvent.BlockBreakEventData;
 import de.jaschastarke.bukkit.lib.events.AttachedBlockDestroyedEvent;
 
-public class AttachedBlocksDestroy extends SimpleModule<Core> implements Listener {
+public class AdditionalBlockBreaks extends SimpleModule<Core> implements Listener {
     private static final String EVENT_DATA_KEY = "plib.blockbreak.attached";
     private static final Material[] GROUNDED_MATERIALS = {
         Material.CARPET,
@@ -48,29 +50,63 @@ public class AttachedBlocksDestroy extends SimpleModule<Core> implements Listene
         Material.DETECTOR_RAIL,
         Material.ACTIVATOR_RAIL,
     };
-    private static boolean alreadyRegistered = false;
+    private static final Material[] NOT_WATERPROOF = {
+        Material.CARPET,
+        Material.SKULL,
+        Material.SNOW,
+        Material.SNOW_BLOCK,
+        Material.SAPLING,
+        Material.TORCH,
+        Material.REDSTONE_TORCH_OFF,
+        Material.REDSTONE_TORCH_ON,
+        Material.WEB,
+        Material.LONG_GRASS,
+        Material.FLOWER_POT,
+        Material.BROWN_MUSHROOM,
+        Material.RED_MUSHROOM,
+        Material.VINE,
+        Material.STONE_BUTTON,
+        Material.WOOD_BUTTON,
+        Material.TRIPWIRE_HOOK,
+        Material.REDSTONE_WIRE,
+        Material.REDSTONE_COMPARATOR,
+        Material.REDSTONE_COMPARATOR_OFF,
+        Material.REDSTONE_COMPARATOR_ON,
+        Material.DIODE,
+        Material.DIODE_BLOCK_OFF,
+        Material.DIODE_BLOCK_ON,
+        Material.LEVER,
+    };
+    private static AdditionalBlockBreaks registeredInstance = null;
     /**
      * List of grounded Items. Attached Items doesn't need to be listed.
      * 
      * Public static to let AddOns update the list, in case the lib is outdated. This isn't good practice, but nevermind.
      */
-    public static List<Material> groundedItems = Arrays.asList(GROUNDED_MATERIALS);
+    public List<Material> groundedItems = Arrays.asList(GROUNDED_MATERIALS);
     
-    public AttachedBlocksDestroy(final Core plugin) {
+    /**
+     * List of not waterproof items.
+     * 
+     * Public static to let AddOns update the list, in case the lib is outdated. This isn't good practice, but nevermind.
+     */
+    public List<Material> notWaterproofItems = Arrays.asList(NOT_WATERPROOF);
+    
+    public AdditionalBlockBreaks(final Core plugin) {
         super(plugin);
     }
     
     @Override
     public void onEnable() {
-        if (!alreadyRegistered) {
-            alreadyRegistered = true;
+        if (registeredInstance == null) {
+            registeredInstance = this;
             super.onEnable();
         }
     }
     @Override
     public void onDisable() {
-        if (this.enabled) { // shouldn't be neccessary, but may be called manually
-            alreadyRegistered = false;
+        if (registeredInstance == this) { // shouldn't be neccessary, but may be called manually
+            registeredInstance = null;
         }
         super.onDisable();
     }
@@ -110,6 +146,14 @@ public class AttachedBlocksDestroy extends SimpleModule<Core> implements Listene
         for (Block breakingBlock : getAttachedBlocks(event.getBlock())) {
             plugin.getLog().debug("Setting BlockBreakEventData to " + event.getBlock().getLocation().toString() + " - " + event.getBlock().getType().toString());
             breakingBlock.setMetadata(EVENT_DATA_KEY, new FixedMetadataValue(plugin, new AttachedBlockDestroyedByPlayerEvent.BlockBreakEventData(event)));
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockFromTo(final BlockFromToEvent event) {
+        if (notWaterproofItems.contains(event.getToBlock().getType())) {
+            WaterDestroyedBlockEvent customEvent = new WaterDestroyedBlockEvent(event.getToBlock(), event.getBlock());
+            plugin.getServer().getPluginManager().callEvent(customEvent);
         }
     }
     
