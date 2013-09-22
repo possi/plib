@@ -16,6 +16,7 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.material.Attachable;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import de.jaschastarke.bukkit.lib.Core;
 import de.jaschastarke.bukkit.lib.SimpleModule;
@@ -118,6 +119,7 @@ public class AdditionalBlockBreaks extends SimpleModule<Core> implements Listene
                 plugin.getLog().debug(block.getLocation().toString() + " - BlockBreakEventData found");
                 AttachedBlockDestroyedEvent customEvent = new AttachedBlockDestroyedByPlayerEvent(block, (BlockBreakEventData) md.value());
                 plugin.getServer().getPluginManager().callEvent(customEvent);
+                block.removeMetadata(EVENT_DATA_KEY, plugin);
                 return;
             }
         }
@@ -143,10 +145,21 @@ public class AdditionalBlockBreaks extends SimpleModule<Core> implements Listene
     
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(final BlockBreakEvent event) {
-        for (Block breakingBlock : getAttachedBlocks(event.getBlock())) {
+        final List<Block> breakingBlockList = getAttachedBlocks(event.getBlock());
+        for (Block breakingBlock : breakingBlockList) {
             plugin.getLog().debug("Setting BlockBreakEventData to " + event.getBlock().getLocation().toString() + " - " + event.getBlock().getType().toString());
             breakingBlock.setMetadata(EVENT_DATA_KEY, new FixedMetadataValue(plugin, new AttachedBlockDestroyedByPlayerEvent.BlockBreakEventData(event)));
         }
+        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new BukkitRunnable() { // cleanup MetaData in 1 Tick
+            @Override
+            public void run() {
+                if (plugin.isDebug())
+                    plugin.getLog().debug("Scheduler: Synchronous Task run: Cleanup BlockbreakData");
+                for (Block breakingBlock : breakingBlockList) {
+                    breakingBlock.removeMetadata(EVENT_DATA_KEY, plugin);
+                }
+            }
+        }, 1L);
     }
     
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -162,7 +175,7 @@ public class AdditionalBlockBreaks extends SimpleModule<Core> implements Listene
         if (groundedItems.contains(attachedTo.getRelative(BlockFace.UP).getType())) {
             blocks.add(attachedTo.getRelative(BlockFace.UP));
         }
-        for (BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}) {
+        for (BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN}) {
             if (attachedTo.getRelative(face).getState().getData() instanceof Attachable) {
                 BlockFace attacedFace = ((Attachable) attachedTo.getRelative(face).getState().getData()).getAttachedFace();
                 if (attacedFace.getOppositeFace() == face) {
