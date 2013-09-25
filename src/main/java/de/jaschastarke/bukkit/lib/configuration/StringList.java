@@ -26,4 +26,12 @@ public class StringList extends ArrayList<String> implements ConfigurableList<St
     public void clearSettings() {
         clear();
     }
+    
+    public boolean containsIgnoreCase(final String val) {
+        for (String str : this) {
+            if (str.equalsIgnoreCase(val))
+                return true;
+        }
+        return false;
+    }
 }
