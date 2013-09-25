@@ -22,6 +22,12 @@ public class EventHandlerList {
         if (!listeners.contains(eventListener))
             listeners.add(eventListener);
     }
+    /**
+     * Doesn't unregister the listener
+     */
+    public void removeListener(final Listener eventListener) {
+        listeners.remove(eventListener);
+    }
     protected void removeEvents(final Listener eventListener) {
         HandlerList.unregisterAll(eventListener);
         listeners.remove(eventListener);

@@ -37,7 +37,7 @@ public final class DBHelper {
     public static Database connect(final Plugin plugin) throws DatabaseConfigurationException {
         ConfigurationSection dbc = getBukkitConfig().getConfigurationSection("database");
         if (!dbc.contains(DATABASE_URL_NODE))
-            throw new DatabaseConfigurationException("No Database-URL configured in bukkit.yaml");
+            throw new DatabaseConfigurationException("No Database-URL configured in bukkit.yml");
         String url = dbc.getString(DATABASE_URL_NODE);
         String driver = dbc.getString("driver");
         Type type = Type.getType(url);
