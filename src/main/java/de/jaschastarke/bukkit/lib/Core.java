@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import de.jaschastarke.I18n;
 import de.jaschastarke.bukkit.lib.commands.BukkitCommandHandler;
+import de.jaschastarke.bukkit.lib.configuration.ConfigurationContainer;
 import de.jaschastarke.bukkit.lib.database.DBHelper;
 import de.jaschastarke.bukkit.lib.permissions.PermissionManager;
 import de.jaschastarke.database.DatabaseConfigurationException;
@@ -18,7 +19,7 @@ import de.jaschastarke.modularize.ModuleEntry;
 import de.jaschastarke.modularize.ModuleManager;
 import de.jaschastarke.utils.ClassDescriptorStorage;
 
-public class Core extends JavaPlugin implements PluginCore, IHasModules {
+public class Core extends JavaPlugin implements PluginCore, IHasModules, ConfigurationContainer {
     protected boolean initialized = false;
     protected EventHandlerList listeners = new EventHandlerList(this);
     protected BukkitCommandHandler commands = new BukkitCommandHandler(this);

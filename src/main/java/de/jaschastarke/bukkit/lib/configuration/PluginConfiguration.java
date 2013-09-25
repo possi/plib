@@ -10,6 +10,10 @@ public abstract class PluginConfiguration extends Configuration implements ISave
     protected Core plugin;
 
     protected File file;
+    
+    public PluginConfiguration(final ConfigurationContainer container) {
+        super(container);
+    }
     public PluginConfiguration(final Core plugin) {
         super(plugin);
         file = new File(plugin.getDataFolder(), "config.yml");

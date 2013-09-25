@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Registers this Class to archiv all its doccomments into the META-INF/doccomments.properties for runtime-access
+ * Registers the Command-Objects to be included in the plugin.yml
  */
 @Retention(RetentionPolicy.SOURCE) 
 @Target(ElementType.TYPE)
-public @interface ArchiveDocComments {
+public @interface PluginCommand {
 }

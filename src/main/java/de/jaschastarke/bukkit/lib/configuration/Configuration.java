@@ -1,8 +1,6 @@
 package de.jaschastarke.bukkit.lib.configuration;
 
 import org.bukkit.configuration.ConfigurationSection;
-
-import de.jaschastarke.bukkit.lib.Core;
 import de.jaschastarke.configuration.IBaseConfigurationNode;
 import de.jaschastarke.configuration.IChangeableConfiguration;
 import de.jaschastarke.configuration.IConfigurationNode;
@@ -10,6 +8,7 @@ import de.jaschastarke.configuration.IConfigurationSubGroup;
 import de.jaschastarke.configuration.InvalidValueException;
 import de.jaschastarke.configuration.MethodConfiguration;
 import de.jaschastarke.configuration.MethodConfigurationNode;
+import de.jaschastarke.utils.ClassDescriptorStorage;
 import de.jaschastarke.utils.DocComment;
 
 /**
@@ -19,12 +18,14 @@ public abstract class Configuration extends MethodConfiguration implements IChan
     protected ConfigurationSection config;
     protected DocComment comment = null;
     
-    public Configuration() {
-        super();
+    public Configuration(final ConfigurationContainer container) {
+        super(container.getDocCommentStorage());
+        comment = container.getDocCommentStorage().getClassFor(this).getDocComment();
+        config = container.getConfig();
     }
-    public Configuration(final Core plugin) {
-        super(plugin.getDocCommentStorage());
-        comment = plugin.getDocCommentStorage().getClassFor(this).getDocComment();
+    public Configuration(final ClassDescriptorStorage docCommentStorage) {
+        super(docCommentStorage);
+        comment = docCommentStorage.getClassFor(this).getDocComment();
     }
 
     public void setValues(final ConfigurationSection sect) {

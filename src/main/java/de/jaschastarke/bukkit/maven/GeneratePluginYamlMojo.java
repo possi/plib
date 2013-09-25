@@ -18,6 +18,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +27,18 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.permissions.PermissionDefault;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.emitter.ScalarAnalysis;
 
 import de.jaschastarke.bukkit.lib.commands.ICommand;
+import de.jaschastarke.bukkit.lib.configuration.Configuration;
+import de.jaschastarke.bukkit.lib.configuration.ConfigurationContainer;
+import de.jaschastarke.bukkit.lib.configuration.YamlConfigurationDumper;
+import de.jaschastarke.configuration.IConfigurationSubGroup;
 import de.jaschastarke.maven.AbstractExecMojo;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 import de.jaschastarke.minecraft.lib.permissions.IChildPermissionContainer;
@@ -81,9 +88,6 @@ import de.jaschastarke.utils.ClassHelper;
  *            <custom>
  *              <dev-url>http://dev.bukkit.org/server-mods/limited-creative/</dev-url>
  *            </custom>
- *            <registeredPermissions>
- *              <param>de.jaschastarke.minecraft.limitedcreative.Perms:Root</param>
- *            </registeredPermissions>
  *          </configuration>
  *        </execution>
  *      </executions>
@@ -95,6 +99,10 @@ import de.jaschastarke.utils.ClassHelper;
  */
 public class GeneratePluginYamlMojo extends AbstractExecMojo {
     private static final int FILE_WIDTH = 999999;
+    private static final String REGISTERED_COMMANDS = "registeredCommands";
+    private static final String REGISTERED_PERMISSIONS = "registeredPermissions";
+    private static final String REGISTERED_CONFIGURATIONS = "registeredConfigurations";
+    private static final String PARENT_SUFFIX = "Parent";
     
     private enum Settings {
         DEFAULT("default"),
@@ -162,7 +170,19 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
      * @parameter default-value="${project.build.outputDirectory}"
      * @required 
      */
+    private String jarTargetDirectory;
+    
+    /**
+     * @parameter default-value="${project.build.directory}"
+     * @required 
+     */
     private String targetDirectory;
+    
+    /**
+     * @parameter default-value="${project.build.directory}/generated-sources/annotations"
+     * @required 
+     */
+    private String annotationDirectory;
 
     private ClassDescriptorStorage cds;
     
@@ -238,12 +258,42 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                 data.put((String) property.getKey(), property.getValue());
             }
         }
+        Map<String, Object> commands = new LinkedHashMap<String, Object>();
+        Map<String, Object> permissions = new LinkedHashMap<String, Object>();
         if (this.registeredCommands != null) {
-            data.put("commands", this.getCommands());
+            for (String cls : this.registeredPermissions) {
+                this.getCommands(cls, commands);
+            }
         }
         if (this.registeredPermissions != null) {
-            data.put("permissions", this.getPermissions());
+            for (String cls : this.registeredPermissions) {
+                this.getPermissions(cls, permissions);
+            }
         }
+        File registerFile = new File(this.annotationDirectory, getClass().getSimpleName() + ".properties");
+        if (registerFile.exists()) {
+            Properties register = new Properties();
+            try {
+                register.load(new FileReader(registerFile));
+                for (int i = 1; register.containsKey(REGISTERED_COMMANDS + i); i++) {
+                    this.getCommands(register.getProperty(REGISTERED_COMMANDS + i), commands);
+                }
+                for (int i = 1; register.containsKey(REGISTERED_PERMISSIONS + i); i++) {
+                    this.getPermissions(register.getProperty(REGISTERED_PERMISSIONS + i), permissions);
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                throw new MojoFailureException("Failed to read pluginregister properties-File: " + e.getMessage());
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new MojoFailureException("Failed to read pluginregister properties-File:" + " " + e.getMessage());
+            }
+            this.writeDefaultConfiguration(register);
+        }
+        if (!commands.isEmpty())
+            data.put("commands", commands);
+        if (!permissions.isEmpty())
+            data.put("permissions", permissions);
         
         DumperOptions options = new DumperOptions() {
             @Override
@@ -259,7 +309,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         
         //getLog().info(writer.toString());
         try {
-            FileWriter fw = new FileWriter(new File(this.targetDirectory + "/plugin.yml"));
+            FileWriter fw = new FileWriter(new File(this.jarTargetDirectory + "/plugin.yml"));
             fw.write(writer.toString());
             fw.close();
         } catch (IOException e) {
@@ -267,108 +317,96 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         }
     }
     
-    private Map<String, Object> getCommands() throws MojoFailureException {
-        Map<String, Object> list = new LinkedHashMap<String, Object>();
-
-        for (String cls : this.registeredCommands) {
+    private void getCommands(final String cls, final Map<String, Object> list) throws MojoFailureException {
+        try {
+            Object pobj;
             try {
-                Object pobj;
-                try {
-                    pobj = ClassHelper.getInstance(cls, loader);
-                } catch (SecurityException e) {
-                    throw new MojoFailureException("SE: registeredCommand class not found: " + cls);
-                } catch (NoSuchFieldException e) {
-                    throw new MojoFailureException("NSFE: registeredCommand class not found: " + cls);
-                } catch (IllegalArgumentException e) {
-                    throw new MojoFailureException("IAE: registeredCommand class could not be instanciated: " + cls);
-                } catch (InvocationTargetException e) {
-                    throw new MojoFailureException("ITE: registeredCommand class could not be instanciated: " + cls);
+                pobj = ClassHelper.getInstance(cls, loader);
+            } catch (SecurityException e) {
+                throw new MojoFailureException("SE: registeredCommand class not found: " + cls);
+            } catch (NoSuchFieldException e) {
+                throw new MojoFailureException("NSFE: registeredCommand class not found: " + cls);
+            } catch (IllegalArgumentException e) {
+                throw new MojoFailureException("IAE: registeredCommand class could not be instanciated: " + cls);
+            } catch (InvocationTargetException e) {
+                throw new MojoFailureException("ITE: registeredCommand class could not be instanciated: " + cls);
+            }
+            
+            if (pobj instanceof ICommand) {
+                DocComment comment = null;
+                if (cds != null) {
+                    ClassDescription cd = cds.getClassFor(pobj);
+                    comment = cd.getDocComment();
+                }
+                Map<String, Object> command = new LinkedHashMap<String, Object>();
+                if (((ICommand) pobj).getAliases() != null)
+                    command.put(Settings.ALIASES.toString(), ((ICommand) pobj).getAliases());
+                if (comment != null) {
+                    String usage = comment.getAnnotationValue(Settings.USAGE.toString());
+                    String permission = comment.getAnnotationValue(Settings.PERMISSION.toString());
+                    String permissionMessage = comment.getAnnotationValue("permissionMessage");
+                    
+                    command.put(Settings.DESCRIPTION.toString(), comment.getDescription());
+                    if (usage != null)
+                        command.put(Settings.USAGE.toString(), usage);
+                    
+                    if (permission != null)
+                        command.put(Settings.PERMISSION.toString(), permission);
+                    if (permissionMessage != null)
+                        command.put(Settings.PERMISSION_MESSAGE.toString(), permissionMessage);
                 }
                 
-                if (pobj instanceof ICommand) {
-                    DocComment comment = null;
-                    if (cds != null) {
-                        ClassDescription cd = cds.getClassFor(pobj);
-                        comment = cd.getDocComment();
-                    }
-                    Map<String, Object> command = new LinkedHashMap<String, Object>();
-                    if (((ICommand) pobj).getAliases() != null)
-                        command.put(Settings.ALIASES.toString(), ((ICommand) pobj).getAliases());
-                    if (comment != null) {
-                        String usage = comment.getAnnotationValue(Settings.USAGE.toString());
-                        String permission = comment.getAnnotationValue(Settings.PERMISSION.toString());
-                        String permissionMessage = comment.getAnnotationValue("permissionMessage");
-                        
-                        command.put(Settings.DESCRIPTION.toString(), comment.getDescription());
-                        if (usage != null)
-                            command.put(Settings.USAGE.toString(), usage);
-                        
-                        if (permission != null)
-                            command.put(Settings.PERMISSION.toString(), permission);
-                        if (permissionMessage != null)
-                            command.put(Settings.PERMISSION_MESSAGE.toString(), permissionMessage);
-                    }
-                    
-                    list.put(((ICommand) pobj).getName(), command);
-                }
-            } catch (ClassNotFoundException e) {
-                throw new MojoFailureException("registeredCommand class not found: " + cls);
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-                throw new MojoFailureException("registeredCommand class couldn't instanciated: " + cls);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                throw new MojoFailureException("registeredCommand class couldn't instanciated: " + cls);
+                list.put(((ICommand) pobj).getName(), command);
             }
+        } catch (ClassNotFoundException e) {
+            throw new MojoFailureException("registeredCommand class not found: " + cls);
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+            throw new MojoFailureException("registeredCommand class couldn't instanciated: " + cls);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            throw new MojoFailureException("registeredCommand class couldn't instanciated: " + cls);
         }
-        
-        return list;
     }
     
-    private Map<String, Object> getPermissions() throws MojoFailureException {
-        Map<String, Object> list = new LinkedHashMap<String, Object>();
-        
-        for (String cls : this.registeredPermissions) {
+    private void getPermissions(final String cls, final Map<String, Object> list) throws MojoFailureException {
+        try {
+            Object pobj;
             try {
-                Object pobj;
-                try {
-                    pobj = ClassHelper.getInstance(cls, loader);
-                } catch (SecurityException e) {
-                    e.printStackTrace();
-                    throw new MojoFailureException("SE: registeredPermission class not found: " + cls);
-                } catch (NoSuchFieldException e) {
-                    e.printStackTrace();
-                    throw new MojoFailureException("NSFE: registeredPermission class not found: " + cls);
-                } catch (IllegalArgumentException e) {
-                    throw new MojoFailureException("IAE: registeredPermission class could not be instanciated: " + cls);
-                } catch (InvocationTargetException e) {
-                    throw new MojoFailureException("ITE: registeredPermission class could not be instanciated: " + cls);
-                }
-
-                if (pobj instanceof IPermission) {
-                    debug("Registered Permission is IPermission {0} <{1}>", ((IAbstractPermission) pobj).getFullString(), pobj.getClass().getName());
-                    DocComment comment = null;
-                    if (cds != null)
-                        comment = cds.getClassFor(pobj).getDocComment();
-                    if (comment == null)
-                        addPermissionToList(list, (IPermission) pobj);
-                    else
-                        addPermissionToList(list, (IPermission) pobj, comment.getDescription());
-                }
-                if (pobj instanceof IContainer) {
-                    debug("Registered Permission is IContainer {0}", pobj.getClass().getName());
-                    addPermissionsToList(list, (IContainer) pobj);
-                }
-            } catch (ClassNotFoundException e) {
-                throw new MojoFailureException("registeredPermission class not found: " + cls);
-            } catch (InstantiationException e) {
+                pobj = ClassHelper.getInstance(cls, loader);
+            } catch (SecurityException e) {
                 e.printStackTrace();
-            } catch (IllegalAccessException e) {
+                throw new MojoFailureException("SE: registeredPermission class not found: " + cls);
+            } catch (NoSuchFieldException e) {
                 e.printStackTrace();
+                throw new MojoFailureException("NSFE: registeredPermission class not found: " + cls);
+            } catch (IllegalArgumentException e) {
+                throw new MojoFailureException("IAE: registeredPermission class could not be instanciated: " + cls);
+            } catch (InvocationTargetException e) {
+                throw new MojoFailureException("ITE: registeredPermission class could not be instanciated: " + cls);
             }
+
+            if (pobj instanceof IPermission) {
+                debug("Registered Permission is IPermission {0} <{1}>", ((IAbstractPermission) pobj).getFullString(), pobj.getClass().getName());
+                DocComment comment = null;
+                if (cds != null)
+                    comment = cds.getClassFor(pobj).getDocComment();
+                if (comment == null)
+                    addPermissionToList(list, (IPermission) pobj);
+                else
+                    addPermissionToList(list, (IPermission) pobj, comment.getDescription());
+            }
+            if (pobj instanceof IContainer) {
+                debug("Registered Permission is IContainer {0}", pobj.getClass().getName());
+                addPermissionsToList(list, (IContainer) pobj);
+            }
+        } catch (ClassNotFoundException e) {
+            throw new MojoFailureException("registeredPermission class not found: " + cls);
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
-        
-        return list;
     }
     private void addPermissionsToList(final Map<String, Object> list, final IContainer perms) {
         for (IPermission perm : perms.getPermissions()) {
@@ -463,5 +501,75 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
     
     private void debug(final String msg, final Object... objects) {
         getLog().debug(MessageFormat.format(msg, objects));
+    }
+    
+    private void writeDefaultConfiguration(final Properties register) throws MojoFailureException {
+        int prevCount = 0;
+        Configuration mainConfig = null;
+        Map<String, Configuration> knowConfigClass = new HashMap<String, Configuration>();
+        do {
+            ConfigurationContainer confContainer = new ConfigurationContainer() {
+                private ConfigurationSection config = new YamlConfiguration();
+                @Override
+                public ClassDescriptorStorage getDocCommentStorage() {
+                    return cds;
+                }
+                @Override
+                public ConfigurationSection getConfig() {
+                    return config;
+                }
+            };
+            prevCount = knowConfigClass.size();
+            for (int i = 1; register.containsKey(REGISTERED_CONFIGURATIONS + i); i++) {
+                String cls = register.getProperty(REGISTERED_CONFIGURATIONS + i);
+                if (!knowConfigClass.containsKey(cls)) {
+                    try {
+                        if (register.containsKey(REGISTERED_CONFIGURATIONS + i + PARENT_SUFFIX)) {
+                            String parent = register.getProperty(REGISTERED_CONFIGURATIONS + i + PARENT_SUFFIX);
+                            if (knowConfigClass.containsKey(parent)) {
+                                IConfigurationSubGroup c = (IConfigurationSubGroup) loader.loadClass(cls).getConstructor(ConfigurationContainer.class).newInstance(confContainer);
+                                knowConfigClass.get(parent).registerSection(c);
+                                knowConfigClass.put(cls, (Configuration) c);
+                            }
+                        } else {
+                            Configuration c = (Configuration) loader.loadClass(cls).getConstructor(ConfigurationContainer.class).newInstance(confContainer);
+                            mainConfig = c;
+                            knowConfigClass.put(cls, c);
+                        }
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
+                        throw new MojoFailureException("InstE: registeredConfigurations class could not be instanciated: " + cls);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                        throw new MojoFailureException("IAE: registeredConfigurations class could not be instanciated: " + cls);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                        throw new MojoFailureException("CNFE: registeredConfigurations class could not be instanciated: " + cls);
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                        throw new MojoFailureException("ITE: registeredConfigurations class could not be instanciated: " + cls);
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                        throw new MojoFailureException("IArgE: registeredConfigurations class could not be instanciated: " + cls);
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                        throw new MojoFailureException("NSME: registeredConfigurations class could not be instanciated: " + cls);
+                    } catch (SecurityException e) {
+                        e.printStackTrace();
+                        throw new MojoFailureException("SE: registeredConfigurations class could not be instanciated: " + cls);
+                    }
+                }
+            }
+        } while (prevCount < knowConfigClass.size());
+        
+        if (mainConfig != null) {
+            YamlConfigurationDumper dumper = new YamlConfigurationDumper(mainConfig);
+            try {
+                dumper.store(new File(this.targetDirectory, "default_config.yml"));
+            } catch (IOException e) {
+                e.printStackTrace();
+                new MojoFailureException("Failed to write example Configuration");
+            }
+        }
     }
 }
