@@ -16,6 +16,9 @@ import de.jaschastarke.bukkit.lib.commands.annotations.NeedsPermission;
 import de.jaschastarke.bukkit.lib.commands.annotations.Usages;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 import de.jaschastarke.utils.ArrayUtil;
+import de.jaschastarke.utils.ClassDescriptorStorage;
+import de.jaschastarke.utils.ClassDescriptorStorage.ClassDescription;
+import de.jaschastarke.utils.DocComment;
 
 public class MethodCommand implements ICommand, IHelpDescribed {
     public static MethodCommand[] getMethodCommandsFor(final Object obj) {
@@ -42,6 +45,17 @@ public class MethodCommand implements ICommand, IHelpDescribed {
         this.method = method;
         
         initialize();
+    }
+    
+    public void setDescription(final ClassDescriptorStorage cds) {
+        if (description == null) {
+            ClassDescription cls = cds.getClassFor(commandclass);
+            if (cls != null) {
+                DocComment el = cls.getElDocComment(method.getName());
+                if (el != null)
+                    description = el.getDescription();
+            }
+        }
     }
     
     private void initialize() {

@@ -18,8 +18,9 @@ import de.jaschastarke.modularize.IModule;
 import de.jaschastarke.modularize.ModuleEntry;
 import de.jaschastarke.modularize.ModuleManager;
 import de.jaschastarke.utils.ClassDescriptorStorage;
+import de.jaschastarke.utils.IDebugLogHolder;
 
-public class Core extends JavaPlugin implements PluginCore, IHasModules, ConfigurationContainer {
+public class Core extends JavaPlugin implements PluginCore, IHasModules, IDebugLogHolder, ConfigurationContainer {
     protected boolean initialized = false;
     protected EventHandlerList listeners = new EventHandlerList(this);
     protected BukkitCommandHandler commands = new BukkitCommandHandler(this);

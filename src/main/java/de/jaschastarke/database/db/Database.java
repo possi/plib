@@ -45,7 +45,7 @@ public abstract class Database implements IDatabase {
         try {
             connection = DriverManager.getConnection(url, properties);
         } catch (SQLException e) {
-            throw new DatabaseConfigurationException("Invalid Database-Configuration", e);
+            throw new DatabaseConfigurationException("Invalid Database-Configuration: " + e.getMessage(), e);
         }
     }
     /*

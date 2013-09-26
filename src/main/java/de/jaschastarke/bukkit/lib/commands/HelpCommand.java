@@ -239,10 +239,14 @@ public class HelpCommand implements ICommand, ICommandListHelp, IHelpDescribed {
             desc.append(formatter.formatString(ChatFormattings.SLASH, ICommand.PREFIX));
         }
         for (Map.Entry<ICommand, String> pcommand : context.getCommandChain().entrySet()) {
-            if (pcommand.getKey() == command) {
+            ICommand tcommand = pcommand.getKey();
+            if (tcommand instanceof AliasCommand) {
+                tcommand = ((AliasCommand<?>) tcommand).getOriginal();
+            }
+            if (tcommand == command) {
                 alias = pcommand.getValue();
                 break;
-            } else if (pcommand.getKey() == this) {
+            } else if (tcommand == this) {
                 break;
             }
             desc.append(formatter.formatString(ChatFormattings.USED_COMMAND, pcommand.getValue()));

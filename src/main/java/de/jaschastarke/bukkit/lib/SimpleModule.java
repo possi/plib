@@ -3,6 +3,7 @@ package de.jaschastarke.bukkit.lib;
 import org.bukkit.event.Listener;
 
 import de.jaschastarke.modularize.AbstractModule;
+import de.jaschastarke.utils.IDebugLogHolder;
 
 /**
  * 
@@ -10,7 +11,7 @@ import de.jaschastarke.modularize.AbstractModule;
  * When the Module is instanceof Bukkit Event Listener-Interface, it is automatically registered.
  *
  */
-public abstract class SimpleModule <E extends Core> extends AbstractModule {
+public abstract class SimpleModule <E extends Core> extends AbstractModule implements IDebugLogHolder {
     protected E plugin;
     public boolean debug = false;
     protected EventHandlerList listeners;
