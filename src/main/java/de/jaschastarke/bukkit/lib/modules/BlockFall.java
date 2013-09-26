@@ -3,6 +3,7 @@ package de.jaschastarke.bukkit.lib.modules;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -45,7 +46,7 @@ public class BlockFall extends SimpleModule<Core> implements Listener {
             } else {
                 for (MetadataValue md : event.getEntity().getMetadata(ENTITY_DATA_KEY)) {
                     if (md.value() instanceof Block) {
-                        BlockMovedEvent ce = new BlockMovedEvent((Block) md.value(), event.getBlock());
+                        BlockMovedEvent ce = new BlockMovedEvent((Block) md.value(), event.getBlock(), (FallingBlock) event.getEntity());
                         plugin.getServer().getPluginManager().callEvent(ce);
                         event.getEntity().removeMetadata(ENTITY_DATA_KEY, md.getOwningPlugin()); // don't fire event twice
                         break;
