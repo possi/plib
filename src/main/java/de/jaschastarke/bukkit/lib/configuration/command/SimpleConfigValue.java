@@ -22,7 +22,14 @@ public class SimpleConfigValue extends AbstractConfigValue {
             final IFormatter f = context.getFormatter();
             String value = StringUtil.join(args);
             try {
-                config.setValue(node, value);
+                if (config instanceof ICommandConfigCallback) {
+                    ICommandConfigCallback.Callback cb = new ICommandConfigCallback.Callback(node, value, context, args, chain);
+                    ((ICommandConfigCallback) config).onConfigCommandChange(cb);
+                    if (!cb.isCancelled())
+                        config.setValue(node, cb.getValue());
+                } else {
+                    config.setValue(node, value);
+                }
                 context.response(f.formatString(ChatFormattings.SUCCESS, f.getString("bukkit.help.configuration.setted", node.getName())));
             } catch (InvalidValueException e) {
                 context.response(f.formatString(ChatFormattings.ERROR, e.getMessage()));
