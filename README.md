@@ -21,3 +21,8 @@ CheckStyle configuration: https://dl.dropbox.com/u/5023975/coding/checkstyle.xml
 
 How to use CheckStyle in Eclipse: http://eclipse-cs.sourceforge.net/downloads.html then Right-click the Project and
 Checkstyle -> Actiate Checkstyle
+
+Helper
+------
+To use Bukkit Translations you can use this tool: http://public.ja-s.de/bukkit/translation.php to convert between
+.properties and lua-style translations.
