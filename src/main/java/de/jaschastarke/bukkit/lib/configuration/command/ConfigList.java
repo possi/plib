@@ -11,6 +11,7 @@ import de.jaschastarke.bukkit.lib.commands.CommandContext;
 import de.jaschastarke.bukkit.lib.commands.HelpCommand;
 import de.jaschastarke.bukkit.lib.commands.ICommand;
 import de.jaschastarke.bukkit.lib.configuration.Configuration;
+import de.jaschastarke.configuration.ConfigurationStyle;
 import de.jaschastarke.configuration.IBaseConfigurationNode;
 import de.jaschastarke.configuration.IConfigurationNode;
 import de.jaschastarke.utils.ArrayUtil;
@@ -66,9 +67,11 @@ public class ConfigList {
             desc.append(f.formatString(ChatFormattings.LABEL, f.getString("bukkit.help.configuration.options")));
             List<IBaseConfigurationNode> configNodes = config.getConfigNodes();
             for (int i = 0; i < configNodes.size(); i++) {
-                if (i > 0)
-                    desc.append(", ");
-                desc.append(f.formatString(ChatFormattings.REQUIRED_ARGUMENT, configNodes.get(i).getName()));
+                if (!(configNodes.get(i) instanceof IConfigurationNode) || ((IConfigurationNode) configNodes.get(i)).getStyle() != ConfigurationStyle.HIDDEN) {
+                    if (i > 0)
+                        desc.append(", ");
+                    desc.append(f.formatString(ChatFormattings.REQUIRED_ARGUMENT, configNodes.get(i).getName()));
+                }
             } 
         }
         return desc.toString();

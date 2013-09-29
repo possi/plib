@@ -5,6 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import de.jaschastarke.configuration.ConfigurationStyle;
+
 @Retention(RetentionPolicy.RUNTIME) 
 @Target(ElementType.METHOD)
 /**
@@ -20,4 +22,5 @@ public @interface IsConfigurationNode {
     String name() default "";
     int order() default 0;
     boolean readonly() default false;
+    ConfigurationStyle style() default ConfigurationStyle.DEFAULT;
 }

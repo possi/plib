@@ -14,6 +14,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
+import de.jaschastarke.configuration.ConfigurationStyle;
 import de.jaschastarke.configuration.IBaseConfigurationNode;
 import de.jaschastarke.configuration.IConfiguration;
 import de.jaschastarke.configuration.IConfigurationNode;
@@ -64,11 +65,18 @@ public class YamlConfigurationDumper {
         }
         
         for (IBaseConfigurationNode node : conf.getConfigNodes()) {
-            if (confsect.length() > 0)
+            ConfigurationStyle style = ConfigurationStyle.DEFAULT;
+            if (node instanceof IConfigurationNode) {
+                style = ((IConfigurationNode) node).getStyle();
+                if (style == ConfigurationStyle.HIDDEN)
+                    continue;
+            }
+            if (confsect.length() > 0 && style != ConfigurationStyle.GROUPED_PREVIOUS) {
                 confsect.append(yamlOptions.getLineBreak().getString());
+            }
             
             String comment = node.getDescription();
-            if (comment != null) {
+            if (comment != null && style != ConfigurationStyle.GROUPED_PREVIOUS) {
                 comment = StringUtil.wrapLines(comment, WRAP_SIZE - indention - 2);
                 confsect.append(prependLines(comment, COMMENT_PREFIX));
                 confsect.append(yamlOptions.getLineBreak().getString());

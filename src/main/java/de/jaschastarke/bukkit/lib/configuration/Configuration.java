@@ -1,6 +1,10 @@
 package de.jaschastarke.bukkit.lib.configuration;
 
+import java.util.List;
+
 import org.bukkit.configuration.ConfigurationSection;
+
+import de.jaschastarke.configuration.ConfigurationStyle;
 import de.jaschastarke.configuration.IBaseConfigurationNode;
 import de.jaschastarke.configuration.IChangeableConfiguration;
 import de.jaschastarke.configuration.IConfigurationNode;
@@ -125,5 +129,19 @@ public abstract class Configuration extends MethodConfiguration implements IChan
                 return defaultValue;
             }
         }
+    }
+    
+    @Override
+    public List<IBaseConfigurationNode> getConfigNodes() {
+        List<IBaseConfigurationNode> rnodes = super.getConfigNodes();
+        for (IBaseConfigurationNode node : rnodes) {
+            if (node instanceof MethodConfigurationNode) {
+                if (((MethodConfigurationNode) node).getStyle() == ConfigurationStyle.HIDDEN) {
+                    if (config.contains(node.getName()))
+                        ((MethodConfigurationNode) node).setStyle(ConfigurationStyle.DEFAULT);
+                }
+            }
+        }
+        return rnodes;
     }
 }

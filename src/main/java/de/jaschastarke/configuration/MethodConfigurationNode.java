@@ -12,21 +12,22 @@ public class MethodConfigurationNode implements IConfigurationNode {
     private Method method;
     private IsConfigurationNode annot;
     private DocComment description;
+    private ConfigurationStyle style = ConfigurationStyle.DEFAULT;
     
     public MethodConfigurationNode(final Method method) {
         this.method = method;
-        setNameFromAnnotation(method.getAnnotation(IsConfigurationNode.class));
+        setDataFromAnnotation(method.getAnnotation(IsConfigurationNode.class));
     }
     public MethodConfigurationNode(final Method method, final IsConfigurationNode annot) {
         this.method = method;
-        setNameFromAnnotation(annot);
+        setDataFromAnnotation(annot);
     }
     public void setDescription(final DocComment desc) {
         this.description = desc;
     }
     
     private static final String METHOD_PREFIX = "get";
-    private void setNameFromAnnotation(final IsConfigurationNode pAnnot) {
+    private void setDataFromAnnotation(final IsConfigurationNode pAnnot) {
         if (pAnnot != null)
             this.annot = pAnnot;
         if (pAnnot == null || pAnnot.name().isEmpty()) {
@@ -39,6 +40,7 @@ public class MethodConfigurationNode implements IConfigurationNode {
         } else {
             this.name = pAnnot.name();
         }
+        this.style = annot.style();
     }
     public Method getMethod() {
         return this.method;
@@ -66,5 +68,12 @@ public class MethodConfigurationNode implements IConfigurationNode {
     @Override
     public Class<?> getType() {
         return method.getReturnType();
+    }
+    @Override
+    public ConfigurationStyle getStyle() {
+        return style;
+    }
+    public void setStyle(final ConfigurationStyle newStyle) {
+        style = newStyle;
     }
 }

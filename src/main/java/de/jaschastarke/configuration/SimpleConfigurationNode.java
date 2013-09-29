@@ -32,4 +32,8 @@ public class SimpleConfigurationNode implements IConfigurationNode {
     public Class<String> getType() {
         return String.class;
     }
+    @Override
+    public ConfigurationStyle getStyle() {
+        return ConfigurationStyle.DEFAULT;
+    }
 }

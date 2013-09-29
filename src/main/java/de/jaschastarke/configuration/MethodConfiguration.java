@@ -9,6 +9,7 @@ import java.util.List;
 
 import de.jaschastarke.configuration.annotations.IsConfigurationNode;
 import de.jaschastarke.utils.ClassDescriptorStorage;
+import de.jaschastarke.utils.DocComment;
 import de.jaschastarke.utils.ClassDescriptorStorage.ClassDescription;
 
 public abstract class MethodConfiguration implements IConfiguration {
@@ -44,6 +45,18 @@ public abstract class MethodConfiguration implements IConfiguration {
             }
         }
         this.sort();
+        
+        DocComment latestdc = null;
+        for (IBaseConfigurationNode node : nodes) {
+            MethodConfigurationNode mn = (MethodConfigurationNode) node;
+            if (mn.getStyle() == ConfigurationStyle.GROUPED_PREVIOUS) {
+                if (latestdc != null && mn.getDescription() == null) {
+                    mn.setDescription(latestdc);
+                }
+            } else {
+                latestdc = cd.getElDocComment(mn.getMethod().getName());
+            }
+        }
     }
     public void sort() {
         if (nodes.size() > 1) {
