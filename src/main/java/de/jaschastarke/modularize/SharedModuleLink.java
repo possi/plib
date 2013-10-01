@@ -54,11 +54,11 @@ public class SharedModuleLink<T extends IModule> implements IModule {
 
     @Override
     public void onEnable() {
-        getLinkedEntry().updateState();
+        getLinkedEntry().updateState(true);
     }
 
     @Override
     public void onDisable() {
-        getLinkedEntry().updateState();
+        getLinkedEntry().updateState(false);
     }
 }

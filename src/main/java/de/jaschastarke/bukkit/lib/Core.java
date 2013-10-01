@@ -59,6 +59,7 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules, IDebugL
         if (db != null) {
             try {
                 db.getConnection().close();
+                db = null;
             } catch (SQLException e) {
                 getLog().severe("Failed to close Database-Connection: " + e.getMessage());
                 e.printStackTrace();

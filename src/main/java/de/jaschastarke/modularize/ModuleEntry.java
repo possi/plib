@@ -48,6 +48,7 @@ public class ModuleEntry <T extends IModule> {
         if (initialState == ModuleState.ENABLED) {
             return this.enable();
         } else {
+            state = initialState;
             return false;
         }
     }
@@ -88,6 +89,12 @@ public class ModuleEntry <T extends IModule> {
     public boolean isEnabled() {
         return state == ModuleState.ENABLED;
     }
+    
+    public void setDefaultEnabled(final boolean newState) {
+        if (isDeactivated())
+            return;
+        initialState = newState ? ModuleState.ENABLED : ModuleState.DISABLED;
+    }
     /**
      * Enables or disables a module, but when the module isn't initialized yet, it changes the initialState instead.
      * @return true if the actual state of the module was changed (not the initialState)
@@ -96,12 +103,10 @@ public class ModuleEntry <T extends IModule> {
         if (isDeactivated())
             return false;
         if (state == ModuleState.NOT_INITIALIZED) {
-            if (initialState == ModuleState.ENABLED || initialState == ModuleState.DISABLED) {
-                initialState = newState ? ModuleState.ENABLED : ModuleState.DISABLED;
-                return false;
-            } else {
-                throw new InvalidStateException(MessageFormat.format("Module {0} was initialized but not enabled/disabled", module.getClass().getName()));
-            }
+            setDefaultEnabled(newState);
+            return false;
+        } else if (state == ModuleState.INITIALIZED) {
+            throw new InvalidStateException(MessageFormat.format("Module {0} was initialized but not enabled/disabled", module.getClass().getName()));
         } else if (newState) {
             return enable();
         } else {

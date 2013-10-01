@@ -18,13 +18,13 @@ public class SharedModuleEntry<T extends IModule> extends ModuleEntry<T> {
     
     public void addDepending(final ModuleEntry<?> entry) {
         usingModules.add(entry);
-        updateState();
+        updateState(true);
     }
     public void removeDepending(final ModuleEntry<?> entry) {
         usingModules.remove(entry);
-        updateState();
+        updateState(false);
     }
-    public void updateState() {
+    public void updateState(final boolean enable) {
         boolean needed = false;
         for (ModuleEntry<?> entry : usingModules) {
             if (entry.isEnabled()) {
@@ -32,9 +32,9 @@ public class SharedModuleEntry<T extends IModule> extends ModuleEntry<T> {
                 break;
             }
         }
-        if (needed) {
+        if (needed && enable) {
             enable();
-        } else {
+        } else if (!needed) {
             disable();
         }
     }
