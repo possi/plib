@@ -5,7 +5,7 @@ public abstract class AbstractModule implements IModule {
     @Override
     public void initialize(final ModuleEntry<IModule> pEntry) {
         if (pEntry.getModule() != this) {
-            throw new RuntimeException("Wrong Module-Entry given to initialize " + this.getClass().getName());
+            throw new IllegalArgumentException("Wrong Module-Entry given to initialize " + this.getClass().getName());
         }
         this.entry = pEntry;
     }

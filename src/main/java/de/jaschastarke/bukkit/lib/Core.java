@@ -1,8 +1,6 @@
 package de.jaschastarke.bukkit.lib;
 
 import java.sql.SQLException;
-import java.util.Collection;
-
 import org.bukkit.plugin.java.JavaPlugin;
 
 import de.jaschastarke.I18n;
@@ -116,8 +114,8 @@ public class Core extends JavaPlugin implements PluginCore, IHasModules, IDebugL
     public <T extends IModule> T getModule(final Class<T> module) {
         return modules.getModuleType(module);
     }
-    public Collection<ModuleEntry<IModule>> getModules() {
-        return modules.getModuleList();
+    public ModuleManager getModules() {
+        return modules;
     }
 
     public ClassDescriptorStorage getDocCommentStorage() {

@@ -9,11 +9,11 @@ public class ModuleEntry <T extends IModule> {
         INITIALIZED,
         NOT_INITIALIZED
     }
-    protected ModuleState state = ModuleState.NOT_INITIALIZED;
-    public ModuleState initialState = ModuleState.ENABLED;
+    private ModuleState state = ModuleState.NOT_INITIALIZED;
+    private ModuleState initialState = ModuleState.ENABLED;
     
-    protected ModuleManager manager = null;
-    protected T module;
+    private ModuleManager manager = null;
+    private T module;
     
     public ModuleEntry(final T module) {
         this.module = module;
@@ -21,6 +21,9 @@ public class ModuleEntry <T extends IModule> {
     public ModuleEntry(final T module, final ModuleManager manager) {
         this.module = module;
         this.manager = manager;
+    }
+    public Class<?> getType() {
+        return module.getClass();
     }
     public T getModule() {
         return module;
@@ -39,9 +42,9 @@ public class ModuleEntry <T extends IModule> {
         return false;
     }
     public boolean activate() {
-        if (state == ModuleState.NOT_INITIALIZED) {
-            this.initialize();
-        }
+        if (isDeactivated())
+            return false;
+        this.initialize();
         if (initialState == ModuleState.ENABLED) {
             return this.enable();
         } else {
@@ -53,9 +56,16 @@ public class ModuleEntry <T extends IModule> {
     }
     
     public boolean enable() {
+        if (isDeactivated())
+            return false;
         if (state == ModuleState.DISABLED || state == ModuleState.INITIALIZED) {
-            module.onEnable();
-            this.state = ModuleState.ENABLED;
+            try {
+                this.state = ModuleState.ENABLED;
+                module.onEnable();
+            } catch (RuntimeException ex) {
+                this.state = ModuleState.DISABLED;
+                throw ex;
+            }
             return true;
         } else if (state == ModuleState.NOT_INITIALIZED) {
             throw new InvalidStateException(MessageFormat.format("Module {0} not yet initialized.", module.getClass().getName()));
@@ -64,10 +74,45 @@ public class ModuleEntry <T extends IModule> {
     }
     public boolean disable() {
         if (state == ModuleState.ENABLED) {
-            module.onDisable();
-            this.state = ModuleState.DISABLED;
+            try {
+                this.state = ModuleState.DISABLED;
+                module.onDisable();
+            } catch (RuntimeException ex) {
+                this.state = ModuleState.ENABLED;
+                throw ex;
+            }
             return true;
         }
         return false;
+    }
+    public boolean isEnabled() {
+        return state == ModuleState.ENABLED;
+    }
+    /**
+     * Enables or disables a module, but when the module isn't initialized yet, it changes the initialState instead.
+     * @return true if the actual state of the module was changed (not the initialState)
+     */
+    public boolean setEnabled(final boolean newState) {
+        if (isDeactivated())
+            return false;
+        if (state == ModuleState.NOT_INITIALIZED) {
+            if (initialState == ModuleState.ENABLED || initialState == ModuleState.DISABLED) {
+                initialState = newState ? ModuleState.ENABLED : ModuleState.DISABLED;
+                return false;
+            } else {
+                throw new InvalidStateException(MessageFormat.format("Module {0} was initialized but not enabled/disabled", module.getClass().getName()));
+            }
+        } else if (newState) {
+            return enable();
+        } else {
+            return disable();
+        }
+    }
+    public void deactivateUsage() {
+        initialState = ModuleState.NOT_INITIALIZED;
+        disable();
+    }
+    public boolean isDeactivated() {
+        return initialState == ModuleState.NOT_INITIALIZED;
     }
 }

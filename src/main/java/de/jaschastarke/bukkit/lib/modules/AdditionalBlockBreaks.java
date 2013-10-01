@@ -27,6 +27,7 @@ import de.jaschastarke.bukkit.lib.events.AttachedBlockDestroyedEvent;
 
 public class AdditionalBlockBreaks extends SimpleModule<Core> implements Listener {
     private static final String EVENT_DATA_KEY = "plib.blockbreak.attached";
+    private static final BlockFace[] CHECK_FACES = new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN};
     private static final Material[] GROUNDED_MATERIALS = {
         Material.CARPET,
         Material.WOOD_PLATE,
@@ -147,19 +148,22 @@ public class AdditionalBlockBreaks extends SimpleModule<Core> implements Listene
     public void onBlockBreak(final BlockBreakEvent event) {
         final List<Block> breakingBlockList = getAttachedBlocks(event.getBlock());
         for (Block breakingBlock : breakingBlockList) {
-            plugin.getLog().debug("Setting BlockBreakEventData to " + event.getBlock().getLocation().toString() + " - " + event.getBlock().getType().toString());
+            if (plugin.isDebug())
+                plugin.getLog().debug("Setting BlockBreakEventData to " + event.getBlock().getLocation().toString() + " - " + event.getBlock().getType().toString());
             breakingBlock.setMetadata(EVENT_DATA_KEY, new FixedMetadataValue(plugin, new AttachedBlockDestroyedByPlayerEvent.BlockBreakEventData(event)));
         }
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new BukkitRunnable() { // cleanup MetaData in 1 Tick
-            @Override
-            public void run() {
-                if (plugin.isDebug())
-                    plugin.getLog().debug("Scheduler: Synchronous Task run: Cleanup BlockbreakData");
-                for (Block breakingBlock : breakingBlockList) {
-                    breakingBlock.removeMetadata(EVENT_DATA_KEY, plugin);
+        if (breakingBlockList.size() > 0) {
+            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new BukkitRunnable() { // cleanup MetaData in 1 Tick
+                @Override
+                public void run() {
+                    if (plugin.isDebug())
+                        plugin.getLog().debug("Scheduler: Synchronous Task run: Cleanup BlockbreakData");
+                    for (Block breakingBlock : breakingBlockList) {
+                        breakingBlock.removeMetadata(EVENT_DATA_KEY, plugin);
+                    }
                 }
-            }
-        }, 1L);
+            }, 1L);
+        }
     }
     
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -171,11 +175,11 @@ public class AdditionalBlockBreaks extends SimpleModule<Core> implements Listene
     }
     
     public List<Block> getAttachedBlocks(final Block attachedTo) {
-        List<Block> blocks = new ArrayList<Block>();
+        List<Block> blocks = new ArrayList<Block>(CHECK_FACES.length);
         if (groundedItems.contains(attachedTo.getRelative(BlockFace.UP).getType())) {
             blocks.add(attachedTo.getRelative(BlockFace.UP));
         }
-        for (BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN}) {
+        for (BlockFace face : CHECK_FACES) {
             if (attachedTo.getRelative(face).getState().getData() instanceof Attachable) {
                 BlockFace attacedFace = ((Attachable) attachedTo.getRelative(face).getState().getData()).getAttachedFace();
                 if (attacedFace.getOppositeFace() == face) {
