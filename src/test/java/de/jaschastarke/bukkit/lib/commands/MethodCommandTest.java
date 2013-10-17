@@ -3,6 +3,7 @@ package de.jaschastarke.bukkit.lib.commands;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 import org.bukkit.command.CommandSender;
 import org.junit.Before;
@@ -55,6 +56,11 @@ public class MethodCommandTest {
             @NeedsPermission("other")
             public boolean declinedCommand(CommandContext context) {
                 return true;
+            }
+
+            @Override
+            public List<TabCompletionHelper> getTabCompleter(MethodCommand cmd) {
+                return null;
             }
         };
         main = MethodCommand.getMethodCommandsFor(container);

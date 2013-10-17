@@ -137,18 +137,23 @@ public class MethodCommand implements ICommand, IHelpDescribed, ITabComplete {
 
     public List<TabCompletionHelper> getCompleter() {
         if (completer == null) {
-            completer = new ArrayList<TabCompletionHelper>();
-            for (String u : getUsages()) {
-                TabCompletionHelper tmp = TabCompletionHelper.forUsageLine(u);
-                if (tmp != null)
-                    completer.add(tmp);
+            if (commandclass instanceof IMethodCommandContainer) {
+                completer = ((IMethodCommandContainer) commandclass).getTabCompleter(this);
+            }
+            if (completer == null) {
+                completer = new ArrayList<TabCompletionHelper>();
+                for (String u : getUsages()) {
+                    TabCompletionHelper tmp = TabCompletionHelper.forUsageLine(u);
+                    if (tmp != null)
+                        completer.add(tmp);
+                }
             }
         }
         return completer;
     }
     
     @Override
-    public List<String> tabComplete(CommandContext context, String[] args) { // TODO: Ask container for completion
+    public List<String> tabComplete(CommandContext context, String[] args) {
         for (IAbstractPermission perm : permissions) {
             if (!context.checkPermission(perm))
                 return null;
