@@ -2,21 +2,22 @@ package de.jaschastarke.bukkit.lib.commands;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabExecutor;
 
 import de.jaschastarke.bukkit.lib.Core;
 import de.jaschastarke.bukkit.lib.chat.ConsoleFormatter;
 import de.jaschastarke.bukkit.lib.chat.IFormatter;
 import de.jaschastarke.bukkit.lib.chat.InGameFormatter;
 
-public class BukkitCommandHandler implements CommandExecutor, ICommandListing {
+public class BukkitCommandHandler implements TabExecutor, ICommandListing {
     protected Core plugin;
     protected Map<Command, ICommand> commands = new HashMap<Command, ICommand>();
     public BukkitCommandHandler(final Core plugin) {
@@ -67,6 +68,23 @@ public class BukkitCommandHandler implements CommandExecutor, ICommandListing {
             sender.sendMessage(ChatColor.RED + e.getMessage());
             return true;
         }
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        ICommand cmd = commands.get(command);
+        if (cmd == null)
+            throw new IllegalArgumentException("Not to handler registered command fired: " + command.getName());
+        
+        if (cmd instanceof ITabCommand) {
+            CommandContext context = new CommandContext(sender);
+            context.setPlugin(plugin);
+            context.setPermissinManager(plugin.getPermManager());
+            
+            context.addHandledCommand(cmd);
+            return ((ITabCommand) cmd).tabComplete(context, args);
+        }
+        return null;
     }
     
     public CommandContext createContext(final CommandSender sender) {

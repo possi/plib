@@ -20,7 +20,7 @@ import de.jaschastarke.utils.ClassDescriptorStorage;
 import de.jaschastarke.utils.ClassDescriptorStorage.ClassDescription;
 import de.jaschastarke.utils.DocComment;
 
-public class MethodCommand implements ICommand, IHelpDescribed {
+public class MethodCommand implements ICommand, IHelpDescribed, ITabComplete {
     public static MethodCommand[] getMethodCommandsFor(final Object obj) {
         List<MethodCommand> list = new ArrayList<MethodCommand>();
         for (Method method : obj.getClass().getMethods()) {
@@ -39,6 +39,7 @@ public class MethodCommand implements ICommand, IHelpDescribed {
     protected CharSequence description;
     protected IAbstractPermission[] permissions;
     protected IAbstractPermission[] relatedPermissions;
+    protected List<TabCompletionHelper> completer = null;
     
     public MethodCommand(final Object commandcls, final Method method) {
         commandclass = commandcls;
@@ -132,6 +133,33 @@ public class MethodCommand implements ICommand, IHelpDescribed {
                 throw (CommandException) e.getCause();
             throw new IllegalCommandMethodException(e);
         }
+    }
+
+    public List<TabCompletionHelper> getCompleter() {
+        if (completer == null) {
+            completer = new ArrayList<TabCompletionHelper>();
+            for (String u : getUsages()) {
+                TabCompletionHelper tmp = TabCompletionHelper.forUsageLine(u);
+                if (tmp != null)
+                    completer.add(tmp);
+            }
+        }
+        return completer;
+    }
+    
+    @Override
+    public List<String> tabComplete(CommandContext context, String[] args) { // TODO: Ask container for completion
+        for (IAbstractPermission perm : permissions) {
+            if (!context.checkPermission(perm))
+                return null;
+        }
+        List<String> hints = new ArrayList<String>();
+        for (TabCompletionHelper c : getCompleter()) {
+            List<String> tmpHints = c.tabComplete(context, args);
+            if (tmpHints != null)
+                hints.addAll(tmpHints);
+        }
+        return hints;
     }
 
     /**

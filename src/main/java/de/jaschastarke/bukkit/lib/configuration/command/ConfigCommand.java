@@ -8,15 +8,15 @@ import de.jaschastarke.bukkit.lib.chat.ChatFormattings;
 import de.jaschastarke.bukkit.lib.chat.IFormatter;
 import de.jaschastarke.bukkit.lib.commands.CommandContext;
 import de.jaschastarke.bukkit.lib.commands.CommandException;
-import de.jaschastarke.bukkit.lib.commands.ICommand;
 import de.jaschastarke.bukkit.lib.commands.IHelpDescribed;
+import de.jaschastarke.bukkit.lib.commands.ITabCommand;
 import de.jaschastarke.bukkit.lib.commands.MissingPermissionCommandException;
 import de.jaschastarke.bukkit.lib.configuration.Configuration;
 import de.jaschastarke.configuration.IBaseConfigurationNode;
 import de.jaschastarke.configuration.ISaveableConfiguration;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 
-public class ConfigCommand implements ICommand, IHelpDescribed {
+public class ConfigCommand implements ITabCommand, IHelpDescribed {
     //ConfigHelpCommand help = new ConfigHelpCommand();
     private Configuration conf;
     private IAbstractPermission[] perms;
@@ -81,6 +81,17 @@ public class ConfigCommand implements ICommand, IHelpDescribed {
             return processSave(context);
         }
         return new ConfigList(conf, this).process(context, args, new String[0]);
+    }
+    @Override
+    public List<String> tabComplete(CommandContext context, String[] args) {
+        for (IAbstractPermission perm : perms) {
+            if (!context.checkPermission(perm))
+                return null;
+        }
+        List<String> hints = new ConfigList(conf, this).tabComplete(context, args, new String[0]);
+        if (hints != null && (args.length == 0 || SAVE.toLowerCase().startsWith(args[0])))
+            hints.add(SAVE);
+        return hints;
     }
 
     @Override

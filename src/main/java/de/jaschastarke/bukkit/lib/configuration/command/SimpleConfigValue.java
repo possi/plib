@@ -1,5 +1,8 @@
 package de.jaschastarke.bukkit.lib.configuration.command;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.jaschastarke.bukkit.lib.chat.ChatFormattings;
 import de.jaschastarke.bukkit.lib.chat.IFormatter;
 import de.jaschastarke.bukkit.lib.chat.IPagination;
@@ -8,7 +11,7 @@ import de.jaschastarke.configuration.IConfigurationNode;
 import de.jaschastarke.configuration.InvalidValueException;
 import de.jaschastarke.utils.StringUtil;
 
-public class SimpleConfigValue extends AbstractConfigValue {
+public class SimpleConfigValue extends AbstractConfigValue implements ITabComplete {
     public SimpleConfigValue(final ConfigList configList, final IConfigurationNode node) {
         super(configList, node);
     }
@@ -44,5 +47,27 @@ public class SimpleConfigValue extends AbstractConfigValue {
         desc.append(f.formatString(ChatFormattings.LABEL, f.getString("bukkit.help.configuration.current_value")));
         desc.append(config.getValue(node).toString());
         return desc.toString();
+    }
+
+    @Override
+    public List<String> tabComplete(String[] args, String[] chain) {
+        if (args.length > 0) {
+            if (Boolean.TYPE.isAssignableFrom(node.getType())) {
+                String val = StringUtil.join(args);
+                if (val.equals("true") || val.equals("on") || val.equals("1") || val.equals("false") || val.equals("off") || val.equals("0")) {
+                    return null;
+                } else {
+                    List<String> hints = new ArrayList<String>();
+                    if ("true".startsWith(val.toLowerCase())) {
+                        hints.add("true");
+                    }
+                    if ("false".startsWith(val.toLowerCase())) {
+                        hints.add("false");
+                    }
+                    return hints;
+                }
+            }
+        }
+        return null;
     }
 }

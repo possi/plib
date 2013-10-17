@@ -15,10 +15,11 @@ import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 import de.jaschastarke.utils.ArrayUtil;
 
 public class HelpCommand implements ICommand, ICommandListHelp, IHelpDescribed {
-    private static final Pattern USAGE_PARSE = Pattern.compile("(\\B\\-\\w(?:\\s\\w+)?\\b|\\B\\-?\\-\\w+\\b)|\\B\\[(.+?)\\]\\B|\\B<(.+?)>\\B");
+    private static final Pattern USAGE_PARSE = Pattern.compile("(\\B\\-\\w(?:\\s\\w+)?\\b|\\B\\-?\\-\\w+\\b)|\\B\\[(.+?)\\]\\B|\\B<(.+?)>\\B|\\B\\|(.+?)\\|\\B");
     private static final int USAGE_IDX_PARAM = 1;
     private static final int USAGE_IDX_OPTIONAL = 2;
     private static final int USAGE_IDX_REQUIRED = 3;
+    private static final int USAGE_IDX_STATIC = 4;
     private static final String SPACE = " ";
     private static final String LIST_SEP = ", ";
     
@@ -223,6 +224,8 @@ public class HelpCommand implements ICommand, ICommandListHelp, IHelpDescribed {
                 matcher.appendReplacement(replace, format.formatString(ChatFormattings.OPTIONAL_ARGUMENT, matcher.group(0)));
             } else if (matcher.group(USAGE_IDX_REQUIRED) != null) {
                 matcher.appendReplacement(replace, format.formatString(ChatFormattings.REQUIRED_ARGUMENT, matcher.group(0)));
+            } else if (matcher.group(USAGE_IDX_STATIC) != null) {
+                matcher.appendReplacement(replace, format.formatString(ChatFormattings.COMMAND, matcher.group(USAGE_IDX_STATIC)));
             }
         }
         matcher.appendTail(replace);

@@ -1,8 +1,10 @@
 package de.jaschastarke.bukkit.lib.commands;
 
+import java.util.List;
+
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 
-public class AliasHelpedCommand<T extends IHelpDescribed> extends AliasCommand<T> implements IHelpDescribed {
+public class AliasHelpedCommand<T extends IHelpDescribed> extends AliasCommand<T> implements IHelpDescribed, ITabCommand {
     public AliasHelpedCommand(final T cmd, final String name) {
         super(cmd, name);
     }
@@ -29,5 +31,12 @@ public class AliasHelpedCommand<T extends IHelpDescribed> extends AliasCommand<T
     public CharSequence getPackageName() {
         return getOriginal().getPackageName();
     }
-
+    
+    @Override
+    public List<String> tabComplete(CommandContext context, String[] args) {
+        ICommand o = getOriginal();
+        if (o instanceof ITabCommand)
+            return ((ITabCommand) o).tabComplete(context, args);
+        return null;
+    }
 }

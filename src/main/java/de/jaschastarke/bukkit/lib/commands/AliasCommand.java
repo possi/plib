@@ -1,6 +1,8 @@
 package de.jaschastarke.bukkit.lib.commands;
 
-public class AliasCommand<T extends ICommand> implements ICommand {
+import java.util.List;
+
+public class AliasCommand<T extends ICommand> implements ITabCommand {
     private T cmd;
     private String name;
     private String[] aliases;
@@ -28,5 +30,13 @@ public class AliasCommand<T extends ICommand> implements ICommand {
     @Override
     public boolean execute(final CommandContext context, final String[] args) throws MissingPermissionCommandException, CommandException {
         return cmd.execute(context, args);
+    }
+    
+    @Override
+    public List<String> tabComplete(CommandContext context, String[] args) {
+        ICommand o = getOriginal();
+        if (o instanceof ITabCommand)
+            return ((ITabCommand) o).tabComplete(context, args);
+        return null;
     }
 }

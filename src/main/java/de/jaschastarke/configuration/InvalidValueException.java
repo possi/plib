@@ -9,4 +9,7 @@ public class InvalidValueException extends Exception {
     public InvalidValueException(final Throwable e) {
         super(e);
     }
+    public InvalidValueException(final String arg0, final Throwable e) {
+        super(arg0, e);
+    }
 }

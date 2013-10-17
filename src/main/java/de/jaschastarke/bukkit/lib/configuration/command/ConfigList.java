@@ -1,5 +1,6 @@
 package de.jaschastarke.bukkit.lib.configuration.command;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -120,5 +121,28 @@ public class ConfigList {
         } else {
             return new SimpleConfigValue(this, node);
         }
+    }
+
+    public List<String> tabComplete(CommandContext context, String[] args, String[] chain) {
+        if (args.length > 0) {
+            List<String> hints = new ArrayList<String>();
+            IBaseConfigurationNode node = getConfNode(args[0]);
+            if (node != null && node instanceof Configuration) {
+                return new ConfigList((Configuration) node, command).tabComplete(context, ArrayUtil.getRange(args, 1), ArrayUtil.push(chain, args[0]));
+            } else if (node != null && node instanceof IConfigurationNode) {
+                IConfigValueCommand conf = getValueCommand((IConfigurationNode) node);
+                if (conf instanceof ITabComplete) {
+                    return ((ITabComplete) conf).tabComplete(ArrayUtil.getRange(args, 1), new String[]{args[0]});
+                }
+            } else if (node == null && args.length == 1) {
+                for (IBaseConfigurationNode confnode : config.getConfigNodes()) {
+                    if (confnode.getName().toLowerCase().startsWith(args[0].toLowerCase())) {
+                        hints.add(confnode.getName());
+                    }
+                }
+            }
+            return hints;
+        }
+        return null;
     }
 }

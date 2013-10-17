@@ -1,5 +1,8 @@
 package de.jaschastarke.bukkit.lib.configuration.command;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.jaschastarke.bukkit.lib.chat.ChatFormattings;
 import de.jaschastarke.bukkit.lib.chat.IFormatter;
 import de.jaschastarke.bukkit.lib.chat.IPagination;
@@ -7,11 +10,12 @@ import de.jaschastarke.bukkit.lib.commands.CommandContext;
 import de.jaschastarke.bukkit.lib.configuration.ConfigurableList;
 import de.jaschastarke.configuration.IConfigurationNode;
 import de.jaschastarke.configuration.InvalidValueException;
+import de.jaschastarke.utils.ArrayUtil;
 import de.jaschastarke.utils.StringUtil;
 
-public class ListConfigValue extends AbstractConfigValue {
-    private static final String ADD = "add";
-    private static final String REMOVE = "remove";
+public class ListConfigValue extends AbstractConfigValue implements ITabComplete {
+    public static final String ADD = "add";
+    public static final String REMOVE = "remove";
     
     public ListConfigValue(final ConfigList configList, final IConfigurationNode node) {
         super(configList, node);
@@ -21,7 +25,7 @@ public class ListConfigValue extends AbstractConfigValue {
     
     @Override
     public String getUsage() {
-        return node.getName() + " <" + ADD + "|" + REMOVE + "> [value]";
+        return node.getName() + " <" + ADD + "|" + REMOVE + "> <value>";
     }
 
     @Override
@@ -68,6 +72,27 @@ public class ListConfigValue extends AbstractConfigValue {
         }
         
         return desc.toString();
+    }
+
+    @Override
+    public List<String> tabComplete(String[] args, String[] chain) {
+        if (args.length > 0) {
+            if ((args[0].equals(ADD) || args[0].equals(REMOVE)) && args.length > 1) {
+                ConfigurableList<?> values = (ConfigurableList<?>) config.getValue(node);
+                if (values instanceof ITabComplete) {
+                    return ((ITabComplete) values).tabComplete(ArrayUtil.getRange(args, 1), ArrayUtil.push(chain, args[0]));
+                }
+            } else if (args.length == 1) {
+                List<String> hints = new ArrayList<String>();
+                if (ADD.toLowerCase().startsWith(args[0].toLowerCase())) {
+                    hints.add(ADD);
+                } else if (REMOVE.toLowerCase().startsWith(args[0].toLowerCase())) {
+                    hints.add(REMOVE);
+                }
+                return hints;
+            }
+        }
+        return null;
     }
 
 }
