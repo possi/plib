@@ -15,6 +15,7 @@ import de.jaschastarke.bukkit.lib.commands.annotations.Description;
 import de.jaschastarke.bukkit.lib.commands.annotations.IsCommand;
 import de.jaschastarke.bukkit.lib.commands.annotations.NeedsPermission;
 import de.jaschastarke.bukkit.lib.commands.annotations.Usages;
+import de.jaschastarke.bukkit.lib.commands.parser.TabCompletion;
 import de.jaschastarke.bukkit.lib.permissions.PermissionManager;
 import de.jaschastarke.minecraft.lib.permissions.BasicPermission;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
@@ -59,7 +60,7 @@ public class MethodCommandTest {
             }
 
             @Override
-            public List<TabCompletionHelper> getTabCompleter(MethodCommand cmd) {
+            public List<TabCompletion> getTabCompleter(MethodCommand cmd) {
                 return null;
             }
         };

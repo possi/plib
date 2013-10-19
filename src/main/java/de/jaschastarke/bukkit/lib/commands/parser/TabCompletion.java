@@ -1,4 +1,4 @@
-package de.jaschastarke.bukkit.lib.commands;
+package de.jaschastarke.bukkit.lib.commands.parser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,8 +12,11 @@ import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import de.jaschastarke.bukkit.lib.commands.CommandContext;
+import de.jaschastarke.bukkit.lib.commands.ITabComplete;
+
 // TODO: Cover argument params: --foo=bar and -f bar
-public class TabCompletionHelper implements ITabComplete {
+public class TabCompletion implements ITabComplete {
     private static final Pattern USAGE_PARSE = Pattern.compile("(\\B\\-\\w\\b|\\B\\-?\\-\\w+\\b)|\\B\\[(.+?)\\]\\B|\\B<(.+?)>\\B|\\B\\|(.+?)\\|\\B|([^\\s]+)");
     private static final int USAGE_IDX_PARAM = 1;
     private static final int USAGE_IDX_OPTIONAL = 2;
@@ -25,10 +28,10 @@ public class TabCompletionHelper implements ITabComplete {
     private Map<String, Completer> completer = new HashMap<String, Completer>();
     private Map<Integer, String> arguments = new HashMap<Integer, String>();
     
-    public TabCompletionHelper() {
+    public TabCompletion() {
         this(true);
     }
-    public TabCompletionHelper(boolean initDefaults) {
+    public TabCompletion(boolean initDefaults) {
         if (initDefaults) {
             completer.put("player", new PlayerCompleter());
             completer.put("world", new WorldCompleter());
@@ -104,8 +107,8 @@ public class TabCompletionHelper implements ITabComplete {
         public String getParameter(String param) {
             return paramVals.get(param);
         }
-        public TabCompletionHelper getHelper() {
-            return TabCompletionHelper.this;
+        public TabCompletion getHelper() {
+            return TabCompletion.this;
         }
     }
     
@@ -144,8 +147,8 @@ public class TabCompletionHelper implements ITabComplete {
         return args;
     }
     
-    public static TabCompletionHelper forUsageLine(String usageLine) {
-        TabCompletionHelper completer = new TabCompletionHelper();
+    public static TabCompletion forUsageLine(String usageLine) {
+        TabCompletion completer = new TabCompletion();
         Matcher matcher = USAGE_PARSE.matcher(usageLine);
         int idx = 0;
         while (matcher.find()) {

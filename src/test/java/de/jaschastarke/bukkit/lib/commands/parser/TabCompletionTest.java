@@ -1,4 +1,4 @@
-package de.jaschastarke.bukkit.lib.commands;
+package de.jaschastarke.bukkit.lib.commands.parser;
 
 import static org.junit.Assert.*;
 
@@ -8,19 +8,20 @@ import java.util.Map;
 import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.Test;
 
-import de.jaschastarke.bukkit.lib.commands.TabCompletionHelper.StringArrayCompleter;
-import de.jaschastarke.bukkit.lib.commands.TabCompletionHelper.PlayerCompleter;
-import de.jaschastarke.bukkit.lib.commands.TabCompletionHelper.StaticCompleter;
-import de.jaschastarke.bukkit.lib.commands.TabCompletionHelper.WorldCompleter;
+import de.jaschastarke.bukkit.lib.commands.parser.TabCompletion;
+import de.jaschastarke.bukkit.lib.commands.parser.TabCompletion.PlayerCompleter;
+import de.jaschastarke.bukkit.lib.commands.parser.TabCompletion.StaticCompleter;
+import de.jaschastarke.bukkit.lib.commands.parser.TabCompletion.StringArrayCompleter;
+import de.jaschastarke.bukkit.lib.commands.parser.TabCompletion.WorldCompleter;
 
-public class TabCompletionHelperTest {
+public class TabCompletionTest {
     private static <T> void assertCollection(T[] expected, List<T> actual) {
         assertThat(actual, IsIterableContainingInAnyOrder.containsInAnyOrder(expected));
     }
     
     @Test
     public void testTabComplete() {
-        TabCompletionHelper completer = TabCompletionHelper.forUsageLine("--foo -b --far |none| <x1> unknown [x3]");
+        TabCompletion completer = TabCompletion.forUsageLine("--foo -b --far |none| <x1> unknown [x3]");
         completer.setCompleter("x1", new StringArrayCompleter(new String[] {"foo", "bar", "bqwertz"}));
         completer.setCompleter("x3", new StringArrayCompleter(new String[] {"abc", "def", "ghi"}));
         
@@ -43,7 +44,7 @@ public class TabCompletionHelperTest {
 
     @Test
     public void testForUsageLine() {
-        TabCompletionHelper completer = TabCompletionHelper.forUsageLine("--foo -b --ar -x -y -z |none| <player> unknown [world]");
+        TabCompletion completer = TabCompletion.forUsageLine("--foo -b --ar -x -y -z |none| <player> unknown [world]");
         
         Map<String, String> params = completer.getParams();
         String[] args = completer.getArguments();

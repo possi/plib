@@ -14,6 +14,7 @@ import de.jaschastarke.bukkit.lib.commands.annotations.Description;
 import de.jaschastarke.bukkit.lib.commands.annotations.IsCommand;
 import de.jaschastarke.bukkit.lib.commands.annotations.NeedsPermission;
 import de.jaschastarke.bukkit.lib.commands.annotations.Usages;
+import de.jaschastarke.bukkit.lib.commands.parser.TabCompletion;
 import de.jaschastarke.minecraft.lib.permissions.IAbstractPermission;
 import de.jaschastarke.utils.ArrayUtil;
 import de.jaschastarke.utils.ClassDescriptorStorage;
@@ -39,7 +40,7 @@ public class MethodCommand implements ICommand, IHelpDescribed, ITabComplete {
     protected CharSequence description;
     protected IAbstractPermission[] permissions;
     protected IAbstractPermission[] relatedPermissions;
-    protected List<TabCompletionHelper> completer = null;
+    protected List<TabCompletion> completer = null;
     
     public MethodCommand(final Object commandcls, final Method method) {
         commandclass = commandcls;
@@ -135,15 +136,15 @@ public class MethodCommand implements ICommand, IHelpDescribed, ITabComplete {
         }
     }
 
-    public List<TabCompletionHelper> getCompleter() {
+    public List<TabCompletion> getCompleter() {
         if (completer == null) {
             if (commandclass instanceof IMethodCommandContainer) {
                 completer = ((IMethodCommandContainer) commandclass).getTabCompleter(this);
             }
             if (completer == null) {
-                completer = new ArrayList<TabCompletionHelper>();
+                completer = new ArrayList<TabCompletion>();
                 for (String u : getUsages()) {
-                    TabCompletionHelper tmp = TabCompletionHelper.forUsageLine(u);
+                    TabCompletion tmp = TabCompletion.forUsageLine(u);
                     if (tmp != null)
                         completer.add(tmp);
                 }
@@ -159,7 +160,7 @@ public class MethodCommand implements ICommand, IHelpDescribed, ITabComplete {
                 return null;
         }
         List<String> hints = new ArrayList<String>();
-        for (TabCompletionHelper c : getCompleter()) {
+        for (TabCompletion c : getCompleter()) {
             List<String> tmpHints = c.tabComplete(context, args);
             if (tmpHints != null)
                 hints.addAll(tmpHints);
