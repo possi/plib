@@ -71,7 +71,7 @@ public class BukkitCommandHandler implements TabExecutor, ICommandListing {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(final CommandSender sender, final Command command, final String alias, final String[] args) {
         ICommand cmd = commands.get(command);
         if (cmd == null)
             throw new IllegalArgumentException("Not to handler registered command fired: " + command.getName());

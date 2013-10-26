@@ -33,7 +33,7 @@ public class AliasHelpedCommand<T extends IHelpDescribed> extends AliasCommand<T
     }
     
     @Override
-    public List<String> tabComplete(CommandContext context, String[] args) {
+    public List<String> tabComplete(final CommandContext context, final String[] args) {
         ICommand o = getOriginal();
         if (o instanceof ITabCommand)
             return ((ITabCommand) o).tabComplete(context, args);

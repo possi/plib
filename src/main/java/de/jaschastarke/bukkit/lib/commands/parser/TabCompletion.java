@@ -31,7 +31,7 @@ public class TabCompletion implements ITabComplete {
     public TabCompletion() {
         this(true);
     }
-    public TabCompletion(boolean initDefaults) {
+    public TabCompletion(final boolean initDefaults) {
         if (initDefaults) {
             completer.put("player", new PlayerCompleter());
             completer.put("world", new WorldCompleter());
@@ -40,7 +40,7 @@ public class TabCompletion implements ITabComplete {
     }
     
     @Override
-    public List<String> tabComplete(CommandContext cc, String[] args) {
+    public List<String> tabComplete(final CommandContext cc, final String[] args) {
         List<String> hints = new ArrayList<String>();
         int idx = 0;
         Context context = new Context(cc);
@@ -89,22 +89,22 @@ public class TabCompletion implements ITabComplete {
         
         private CommandContext cc;
         
-        public Context(CommandContext cc) {
+        public Context(final CommandContext cc) {
             this.cc = cc;
         }
         public CommandContext getCommandContext() {
             return cc;
         }
-        public void setArgument(int index, String val) {
+        public void setArgument(final int index, final String val) {
             argVals.put(index, val);
         }
-        public String getArgument(int index) {
+        public String getArgument(final int index) {
             return argVals.get(index);
         }
-        public void setParameter(String param, String val) {
+        public void setParameter(final String param, final String val) {
             paramVals.put(param, val);
         }
-        public String getParameter(String param) {
+        public String getParameter(final String param) {
             return paramVals.get(param);
         }
         public TabCompletion getHelper() {
@@ -112,23 +112,23 @@ public class TabCompletion implements ITabComplete {
         }
     }
     
-    public void setCompleter(String name, Completer cmpltr) {
+    public void setCompleter(final String name, final Completer cmpltr) {
         completer.put(name, cmpltr);
     }
-    public Completer getCompleter(String name) {
+    public Completer getCompleter(final String name) {
         return completer.get(name);
     }
-    public void setArgumentIndex(int idx, String name) {
+    public void setArgumentIndex(final int idx, final String name) {
         arguments.put(idx, name);
     }
-    public void setArgumentCompleter(int idx, String name, Completer cmpltr) {
+    public void setArgumentCompleter(final int idx, final String name, final Completer cmpltr) {
         setArgumentIndex(idx, name);
         setCompleter(name, cmpltr);
     }
-    public void addParameter(String name, String argumentName) {
+    public void addParameter(final String name, final String argumentName) {
         params.put(name, argumentName);
     }
-    public void addParameter(String name) {
+    public void addParameter(final String name) {
         addParameter(name, null);
     }
     
@@ -147,7 +147,7 @@ public class TabCompletion implements ITabComplete {
         return args;
     }
     
-    public static TabCompletion forUsageLine(String usageLine) {
+    public static TabCompletion forUsageLine(final String usageLine) {
         TabCompletion completer = new TabCompletion();
         Matcher matcher = USAGE_PARSE.matcher(usageLine);
         int idx = 0;
@@ -177,14 +177,14 @@ public class TabCompletion implements ITabComplete {
         public List<String> get(Context context, String arg);
     }
     
-    protected static boolean matches(Context context, String val, Completer cmpltr) {
+    protected static boolean matches(final Context context, final String val, final Completer cmpltr) {
         List<String> result = cmpltr.get(context, val);
         return result != null && result.get(0).equals(val);
     }
     
     public static class PlayerCompleter implements Completer {
         @Override
-        public List<String> get(Context context, String arg) {
+        public List<String> get(final Context context, final String arg) {
             List<String> hints = new ArrayList<String>();
             for (Player p : Bukkit.getServer().getOnlinePlayers()) {
                 if (p.getName().toLowerCase().startsWith(arg.toLowerCase()))
@@ -201,11 +201,11 @@ public class TabCompletion implements ITabComplete {
     }
     public static class EnumCompleter<T extends Enum<T>> implements Completer {
         private Class<T> enumType;
-        public EnumCompleter(Class<T> enumType) {
+        public EnumCompleter(final Class<T> enumType) {
             this.enumType = enumType;
         }
         @Override
-        public List<String> get(Context context, String arg) {
+        public List<String> get(final Context context, final String arg) {
             List<String> hints = new ArrayList<String>();
             for (T e : enumType.getEnumConstants()) {
                 if (e.name().toLowerCase().startsWith(arg.toLowerCase()))
@@ -217,7 +217,7 @@ public class TabCompletion implements ITabComplete {
     
     public static class WorldCompleter implements Completer {
         @Override
-        public List<String> get(Context context, String arg) {
+        public List<String> get(final Context context, final String arg) {
             List<String> hints = new ArrayList<String>();
             for (World w : Bukkit.getServer().getWorlds()) {
                 if (w.getName().toLowerCase().startsWith(arg.toLowerCase()))
@@ -229,11 +229,11 @@ public class TabCompletion implements ITabComplete {
     
     public static class StringArrayCompleter implements Completer {
         private String[] strings;
-        public StringArrayCompleter(String[] strings) {
+        public StringArrayCompleter(final String[] strings) {
             this.strings = strings;
         }
         @Override
-        public List<String> get(Context context, String arg) {
+        public List<String> get(final Context context, final String arg) {
             List<String> hints = new ArrayList<String>();
             for (String s : strings) {
                 if (s.toLowerCase().startsWith(arg.toLowerCase()))
@@ -244,7 +244,7 @@ public class TabCompletion implements ITabComplete {
     }
     
     public static class StaticCompleter extends StringArrayCompleter {
-        public StaticCompleter(String string) {
+        public StaticCompleter(final String string) {
             super(new String[]{string});
         }
     }

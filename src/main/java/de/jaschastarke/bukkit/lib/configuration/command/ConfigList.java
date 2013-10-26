@@ -123,7 +123,7 @@ public class ConfigList {
         }
     }
 
-    public List<String> tabComplete(CommandContext context, String[] args, String[] chain) {
+    public List<String> tabComplete(final CommandContext context, final String[] args, final String[] chain) {
         if (args.length > 0) {
             List<String> hints = new ArrayList<String>();
             IBaseConfigurationNode node = getConfNode(args[0]);

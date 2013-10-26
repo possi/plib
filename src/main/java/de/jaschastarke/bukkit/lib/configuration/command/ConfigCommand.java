@@ -83,7 +83,7 @@ public class ConfigCommand implements ITabCommand, IHelpDescribed {
         return new ConfigList(conf, this).process(context, args, new String[0]);
     }
     @Override
-    public List<String> tabComplete(CommandContext context, String[] args) {
+    public List<String> tabComplete(final CommandContext context, final String[] args) {
         for (IAbstractPermission perm : perms) {
             if (!context.checkPermission(perm))
                 return null;

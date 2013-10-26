@@ -37,7 +37,7 @@ public class StringList extends ArrayList<String> implements ConfigurableList<St
         return false;
     }
     
-    public List<String> tabComplete(String[] args, String[] chain) {
+    public List<String> tabComplete(final String[] args, final String[] chain) {
         if (args.length > 0 && chain.length > 0) {
             if (chain[chain.length - 1].equalsIgnoreCase(ListConfigValue.REMOVE)) {
                 List<String> hints = new ArrayList<String>();

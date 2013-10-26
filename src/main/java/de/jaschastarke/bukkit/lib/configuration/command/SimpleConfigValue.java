@@ -48,21 +48,24 @@ public class SimpleConfigValue extends AbstractConfigValue implements ITabComple
         desc.append(config.getValue(node).toString());
         return desc.toString();
     }
+    
+    private static final String TRUE = "true";
+    private static final String FALSE = "false";
 
     @Override
-    public List<String> tabComplete(String[] args, String[] chain) {
+    public List<String> tabComplete(final String[] args, final String[] chain) {
         if (args.length > 0) {
             if (Boolean.TYPE.isAssignableFrom(node.getType())) {
                 String val = StringUtil.join(args);
-                if (val.equals("true") || val.equals("on") || val.equals("1") || val.equals("false") || val.equals("off") || val.equals("0")) {
+                if (val.equals(TRUE) || val.equals("on") || val.equals("1") || val.equals(FALSE) || val.equals("off") || val.equals("0")) {
                     return null;
                 } else {
                     List<String> hints = new ArrayList<String>();
-                    if ("true".startsWith(val.toLowerCase())) {
-                        hints.add("true");
+                    if (TRUE.startsWith(val.toLowerCase())) {
+                        hints.add(TRUE);
                     }
-                    if ("false".startsWith(val.toLowerCase())) {
-                        hints.add("false");
+                    if (FALSE.startsWith(val.toLowerCase())) {
+                        hints.add(FALSE);
                     }
                     return hints;
                 }

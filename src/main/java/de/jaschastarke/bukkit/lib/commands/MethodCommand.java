@@ -154,7 +154,7 @@ public class MethodCommand implements ICommand, IHelpDescribed, ITabComplete {
     }
     
     @Override
-    public List<String> tabComplete(CommandContext context, String[] args) {
+    public List<String> tabComplete(final CommandContext context, final String[] args) {
         for (IAbstractPermission perm : permissions) {
             if (!context.checkPermission(perm))
                 return null;

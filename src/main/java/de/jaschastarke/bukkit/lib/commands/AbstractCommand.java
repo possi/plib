@@ -40,7 +40,7 @@ public abstract class AbstractCommand extends AbstractCommandList implements ITa
     }
     
     @Override
-    public List<String> tabComplete(CommandContext context, String[] args) {
+    public List<String> tabComplete(final CommandContext context, final String[] args) {
         if (args.length > 0) {
             String name = args[0];
             String[] newArgs = ArrayUtil.getRange(args, 1);

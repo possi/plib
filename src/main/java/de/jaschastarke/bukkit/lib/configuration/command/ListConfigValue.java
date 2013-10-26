@@ -75,7 +75,7 @@ public class ListConfigValue extends AbstractConfigValue implements ITabComplete
     }
 
     @Override
-    public List<String> tabComplete(String[] args, String[] chain) {
+    public List<String> tabComplete(final String[] args, final String[] chain) {
         if (args.length > 0) {
             if ((args[0].equals(ADD) || args[0].equals(REMOVE)) && args.length > 1) {
                 ConfigurableList<?> values = (ConfigurableList<?>) config.getValue(node);
