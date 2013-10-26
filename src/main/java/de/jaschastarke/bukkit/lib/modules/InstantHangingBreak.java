@@ -114,7 +114,7 @@ public class InstantHangingBreak extends SimpleModule<Core> implements Listener 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onBlockBreak(final BlockBreakEvent event) {
         for (Hanging hanging : getAttachedHangings(event.getBlock())) {
-            HangingBreakByPlayerBlockEvent hangingEvent = new HangingBreakByPlayerBlockEvent(hanging, event.getPlayer(), RemoveCause.OBSTRUCTION);
+            HangingBreakByPlayerBlockEvent hangingEvent = new HangingBreakByPlayerBlockEvent(hanging, event.getPlayer(), RemoveCause.PHYSICS);
             plugin.getServer().getPluginManager().callEvent(hangingEvent);
             if (hangingEvent.isCancelled()) {
                 event.setCancelled(true);
