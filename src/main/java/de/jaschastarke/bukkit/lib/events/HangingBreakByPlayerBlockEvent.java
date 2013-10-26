@@ -23,7 +23,9 @@ public class HangingBreakByPlayerBlockEvent extends HangingBreakByEntityEvent {
             drops.add(new ItemStack(Material.PAINTING));
         } else if (hanging instanceof ItemFrame) {
             drops.add(new ItemStack(Material.ITEM_FRAME));
-            drops.add(((ItemFrame) hanging).getItem());
+            ItemStack containedItem = ((ItemFrame) hanging).getItem();
+            if (containedItem != null && containedItem.getType() != Material.AIR)
+                drops.add(containedItem);
         }
     }
     public Player getPlayer() {
