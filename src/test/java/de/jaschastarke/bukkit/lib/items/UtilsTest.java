@@ -12,6 +12,7 @@ public class UtilsTest {
     public void setUp() throws Exception {
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testParseMaterial() throws MaterialNotRecognizedException, MaterialDataNotRecognizedException {
         MaterialData m;

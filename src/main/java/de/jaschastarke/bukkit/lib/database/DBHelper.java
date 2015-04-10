@@ -1,6 +1,7 @@
 package de.jaschastarke.bukkit.lib.database;
 
 import java.io.File;
+import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -30,7 +31,8 @@ public final class DBHelper {
             Server server = Bukkit.getServer();
             configuration = YamlConfiguration.loadConfiguration(new File("bukkit.yml"));
             configuration.options().copyDefaults(true);
-            configuration.setDefaults(YamlConfiguration.loadConfiguration(server.getClass().getClassLoader().getResourceAsStream("configurations/bukkit.yml")));
+            InputStreamReader inputStreamReader = new InputStreamReader(server.getClass().getClassLoader().getResourceAsStream("configurations/bukkit.yml"));
+            configuration.setDefaults(YamlConfiguration.loadConfiguration(inputStreamReader));
         }
         return configuration;
     }

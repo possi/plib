@@ -70,7 +70,7 @@ public class BlockPhysicsBlockBreaks extends AdditionalBlockBreaks implements Li
             breakingBlock.setMetadata(EVENT_DATA_KEY, new FixedMetadataValue(plugin, new AttachedBlockDestroyedByPlayerEvent.BlockBreakEventData(event)));
         }
         if (breakingBlockList.size() > 0) {
-            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new BukkitRunnable() { // cleanup MetaData in 1 Tick
+            (new BukkitRunnable() { // cleanup MetaData in 1 Tick
                 @Override
                 public void run() {
                     if (plugin.isDebug())
@@ -79,7 +79,7 @@ public class BlockPhysicsBlockBreaks extends AdditionalBlockBreaks implements Li
                         breakingBlock.removeMetadata(EVENT_DATA_KEY, plugin);
                     }
                 }
-            }, 1L);
+            }).runTaskLater(plugin, 1L);
         }
     }
 

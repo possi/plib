@@ -7,6 +7,7 @@ public final class ItemUtils {
     private ItemUtils() {
     }
     public static final String MATERIAL_DATA_SEP = ":";
+    @SuppressWarnings("deprecation")
     public static MaterialData parseMaterial(final String m) throws MaterialNotRecognizedException, MaterialDataNotRecognizedException {
         String material = m;
         int d = -1;
