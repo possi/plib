@@ -42,15 +42,15 @@
       <url>http://repo.ja-s.de/mvn</url>
     </repository>
     
-    <!-- Official (Craft-)Bukkit repository -->
+    <!-- (Craft-)Bukkit repository -->
     <repository>
-      <id>bukkit-repo</id>
-      <url>http://repo.bukkit.org/content/groups/public</url>
+      <id>spigot-repo</id>
+      <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
     </repository>
     <!-- Official Vault repository -->
     <repository>
         <id>vault-repo</id>
-        <url>http://ci.herocraftonline.com/plugin/repository/everything</url>
+        <url>http://nexus.theyeticave.net/content/repositories/pub_releases</url>
     </repository>
   </repositories>
   
@@ -81,16 +81,16 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-        <!-- http://dl.bukkit.org/ -->
-        <groupId>org.bukkit</groupId>
-        <artifactId>bukkit</artifactId>
-        <version>1.6.2-R0.1</version>
+      <!-- https://hub.spigotmc.org/nexus/#nexus-search;quick~bukkit -->
+      <groupId>org.bukkit</groupId>
+      <artifactId>bukkit</artifactId>
+      <version>1.8.3-R0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
         <!-- http://dev.bukkit.org/server-mods/vault/ -->
         <groupId>net.milkbowl.vault</groupId>
         <artifactId>Vault</artifactId>
-        <version>1.2.25-SNAPSHOT</version>
+        <version>1.5.3</version>
     </dependency>
   </dependencies>
   

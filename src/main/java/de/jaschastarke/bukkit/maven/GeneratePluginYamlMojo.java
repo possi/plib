@@ -261,7 +261,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         Map<String, Object> commands = new LinkedHashMap<String, Object>();
         Map<String, Object> permissions = new LinkedHashMap<String, Object>();
         if (this.registeredCommands != null) {
-            for (String cls : this.registeredPermissions) {
+            for (String cls : this.registeredCommands) {
                 this.getCommands(cls, commands);
             }
         }

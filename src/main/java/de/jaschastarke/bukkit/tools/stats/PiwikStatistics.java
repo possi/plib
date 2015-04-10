@@ -124,7 +124,7 @@ public class PiwikStatistics implements IStatistics {
             @Override
             public void run() {
                 if (server != null) {
-                    final int playercount = plugin.getServer().getOnlinePlayers().length;
+                    final int playercount = plugin.getServer().getOnlinePlayers().size();
                     if (playercount > 0) {
                         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
                             @Override
