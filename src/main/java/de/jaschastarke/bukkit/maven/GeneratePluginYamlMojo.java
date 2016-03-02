@@ -295,12 +295,12 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         if (!permissions.isEmpty())
             data.put("permissions", permissions);
         
-        DumperOptions options = new DumperOptions() {
+        DumperOptions options = new DumperOptions()/* {
             @Override
             public DumperOptions.ScalarStyle calculateScalarStyle(final ScalarAnalysis analysis, final DumperOptions.ScalarStyle style) {
                 return analysis.multiline ? DumperOptions.ScalarStyle.LITERAL : style;
              }
-        };
+        }*/;
         options.setWidth(FILE_WIDTH);
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(options);
