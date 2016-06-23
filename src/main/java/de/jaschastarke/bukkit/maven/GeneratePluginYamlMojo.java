@@ -205,22 +205,25 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
         
         String sversion = this.version;
         if (sversion.endsWith("-SNAPSHOT")) {
+            debug("SNAPSHOT-Release. Fetching commit.");
             boolean success = false;
             try {
-                Process p = Runtime.getRuntime().exec("git rev-parse --verify HEAD");
+                Process p = Runtime.getRuntime().exec("git describe --always --tags --candidates 100");
                 BufferedReader b = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 String hash = b.readLine();
                 b.close();
-                if (hash != null && hash.trim().length() == EXPECTED_GIT_HASH_LENGTH) {
-                    sversion += "-" + hash.substring(0, TRUNCATED_GIT_HASH_LENGTH);
+                if (hash != null) {
+                    debug("Got git describe hash: "+hash);
+                    sversion += "-" + hash;
                     success = true;
                 } else {
-                    getLog().info("Invalid GitHash from `git rev-parse --verify HEAD`: " + hash);
+                    getLog().info("Invalid GitHash from `git describe --tags`: " + b.readLine());
                 }
             } catch (IOException e) {
-                getLog().info("Failed to read GitHash via `git rev-parse --verify HEAD`: " + e.getMessage());
+                getLog().info("Failed to read GitHash via `git describe`: " + e.getMessage());
             }
             if (!success) {
+                debug("git describe failed. Getting hash from .git/refs/heads/master-File");
                 File f = new File(".git/refs/heads/master");
                 if (f.canRead()) {
                     try {
@@ -229,6 +232,7 @@ public class GeneratePluginYamlMojo extends AbstractExecMojo {
                         b.close();
                         if (hash.trim().length() == EXPECTED_GIT_HASH_LENGTH) {
                             sversion += "-" + hash.substring(0, TRUNCATED_GIT_HASH_LENGTH);
+                            debug("read git-sha1: "+hash);
                             success = true;
                         } else {
                             getLog().info("Invalid GitHash from .git/refs/heads/master: " + hash);
