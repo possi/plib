@@ -118,8 +118,14 @@ public class ConfigList {
     protected IConfigValueCommand getValueCommand(final IConfigurationNode node) {
         if (List.class.isAssignableFrom(node.getType())) {
             return new ListConfigValue(this, node);
+        } else if (Enum.class.isAssignableFrom(node.getType())) {
+            return new EnumConfigValue(this, node);
+        } else if (Number.class.isAssignableFrom(node.getType())) {
+            return new NumberConfigValue(this, node);
+        } else if (Boolean.class.isAssignableFrom(node.getType())) {
+            return new BooleanConfigValue(this, node);
         } else {
-            return new SimpleConfigValue(this, node);
+            return new StringConfigValue(this, node);
         }
     }
 

@@ -51,11 +51,6 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
-        <!-- SpigotMC repository -->
-        <repository>
-            <id>spigot-snapshot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
-        </repository>
         <!-- (Craft-)Bukkit repository -->
         <repository>
             <id>sk89q-bukkit-mirror-repo</id>
